@@ -12,8 +12,6 @@ const gotoAccountRecovery = () => {
         name: 'Auth',
     });
 
-    
-
 </script>
 
 <template>
