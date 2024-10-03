@@ -1,5 +1,3 @@
-import './components/styles.css'
-
 <script setup lang="ts">
 
 import { useRouter } from 'vue-router';
@@ -80,6 +78,7 @@ const gotoAccountRecovery = () => {
     border-radius: 15px;
     color: #f0f0f0;
     padding: 10px 50px;
+    margin-top: 14px;
     text-align: center;
     text-decoration: none;
     font-size: 16px;
@@ -97,6 +96,7 @@ const gotoAccountRecovery = () => {
 
   ::placeholder {
     font-family: 'Poppins';
+    font-size: 14px;
     color: #A0A0A0;
   }
 
@@ -118,6 +118,7 @@ const gotoAccountRecovery = () => {
   }
  
   #manager {
+    font-family: 'Poppins';
     background-color: #2857A3;
     border: none;
     border-radius: 15px;
@@ -125,14 +126,13 @@ const gotoAccountRecovery = () => {
     padding: 10px 50px;
     text-align: center;
     text-decoration: none;
-    display: inline-flex;
-    justify-content: left;
     font-size: 16px;
     cursor: pointer;
   }
   
   
   #employee {
+    font-family: 'Poppins';
     background-color: #2857A3;
     border: none;
     border-radius: 15px;
@@ -140,8 +140,6 @@ const gotoAccountRecovery = () => {
     padding: 10px 50px;
     text-align: center;
     text-decoration: none;
-    display: inline-flex;
-    justify-content: left;
     font-size: 16px;
     cursor: pointer;
   }
@@ -166,12 +164,13 @@ const gotoAccountRecovery = () => {
     font-size: 18px;
     line-height: 1.4;
     font-weight: 700;
-    margin-bottom: 0;
+    margin: 0;
   }
 
   h2 {
     font-family: 'Poppins';
-    margin-top: 3px;
+    margin-bottom: 10px;
+    margin-top: 0;
     font-size: 14px;
     line-height: 1.6;
     font-weight: 400;
