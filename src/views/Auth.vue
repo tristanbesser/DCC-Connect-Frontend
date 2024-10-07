@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+import RoundedBox from '../components/LoginFrame.vue'
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -15,35 +15,40 @@ const gotoAccountRecovery = () => {
 </script>
 
 <template>
-  <div id = "rounded-box">
-    <div id = "heading">
-      <h1>DCC Connect</h1>
-      <h2>Welcome to DCC Connect, a simplified scheduling platform for DCC staff.</h2>
+    <div id="holder">
+      <RoundedBox>
+        <div id = "heading">
+          <h1>DCC Connect</h1>
+          <h2>Welcome to DCC Connect, a simplified scheduling platform for DCC staff.</h2>
+        </div>
+        <div id = "btn-group">
+          <button id = "employee">Employee</button>
+          <button id = "manager">Manager</button>
+        </div>
+        <div id = "email">
+          <label>Email</label>
+          <input type="text" name = "email" placeholder="you@example.com">
+        </div>
+        <div id = "password">
+          <label>Password</label>
+          <input type="text" name = "password" placeholder="Enter your password">
+        </div>
+        <div>
+          <button id = "sign-in">Sign In</button>
+        </div>
+        <div id = "forgot-pass">
+          <a @click="gotoAccountRecovery">Forgot Password</a>
+        </div>
+      </RoundedBox>
     </div>
-    <div id = "btn-group">
-      <button id = "employee">Employee</button>
-      <button id = "manager">Manager</button>
-    </div>
-    <div id = "email">
-      <label>Email</label>
-      <input type="text" name = "email" placeholder="you@example.com">
-    </div>
-    <div id = "password">
-      <label>Password</label>
-      <input type="text" name = "password" placeholder="Enter your password">
-    </div>
-    <div>
-      <button id = "sign-in">Sign In</button>
-    </div>
-    <div id = "forgot-pass">
-      <a @click="gotoAccountRecovery">Forgot Password</a>
-    </div>
-  </div>
 </template>
 
 <style scoped>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
+  #holder {
+    height: 100%;
+  }
   a:visited {
     text-decoration: none;
     color: #E47809;
@@ -177,6 +182,7 @@ const gotoAccountRecovery = () => {
   
   #rounded-box {
     display: flex;
+    justify-content: center;
     flex-direction: column;
     padding: 20px;
     width: 624px;

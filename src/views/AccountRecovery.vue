@@ -10,6 +10,7 @@ const gotoAccountRecoveryCode = () => {
 </script>
 
 <template>
+    <div id='holder'>
     <RoundedBox id="loginframe">
         <div id="heading">
             <h1>Account Recovery</h1>
@@ -23,10 +24,18 @@ const gotoAccountRecoveryCode = () => {
             <button id="sign-in" @click="gotoAccountRecoveryCode">Send Code</button>
         </div>
     </RoundedBox>
+    </div>
 </template>
 
 
 <style>
+  #holder {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #D0E1F9;
+  }
     #sign-in-button {
         display: flex;
         align-items: center;

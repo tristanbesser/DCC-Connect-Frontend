@@ -4,6 +4,7 @@ import Auth from '../views/Auth.vue';  // Import the Auth page component
 import AccountRecovery from '../views/AccountRecovery.vue';  // Import the AccountRecovery page component
 import AccountRecoveryCode from '../views/AccountRecoveryCode.vue';
 import ChangePassword from '../views/ChangePassword.vue';
+import Account from '../views/Account.vue';
 
 const routes = [
   {
@@ -25,6 +26,11 @@ const routes = [
     path: '/change-password',
     name: 'ChangePassword',
     component: ChangePassword
+  },
+  {
+    path: '/account',
+    name: 'Account',
+    component: Account
   }
 ];
 

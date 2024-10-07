@@ -8,25 +8,34 @@
 </script>
 
 <template>
-  <RoundedBox id = 'frame'>
-    <div id="heading">
-      <h1>Account Recovery</h1>
-      <h2>We sent a verification code to your email.</h2>
-    </div>
-    <div id ="resend">
-      <h2>Didn't get the code? <a @click="resend">RESEND IT</a></h2>
-    </div>
-    <div id="input">
-      <label>Verification Code</label>
-      <input type="text" placeholder="Enter Code">
-    </div>
-    <div id="next-button">
-      <button id ="next" @click="gotoChangePassword">Next</button>
-    </div>
-  </RoundedBox>
+  <div id="holder">
+    <RoundedBox id = 'frame'>
+      <div id="heading">
+        <h1>Account Recovery</h1>
+        <h2>We sent a verification code to your email.</h2>
+      </div>
+      <div id ="resend">
+        <h2>Didn't get the code? <a @click="resend">RESEND IT</a></h2>
+      </div>
+      <div id="input">
+        <label>Verification Code</label>
+        <input type="text" placeholder="Enter Code">
+      </div>
+      <div id="next-button">
+        <button id ="next" @click="gotoChangePassword">Next</button>
+      </div>
+    </RoundedBox>
+  </div>
 </template>
 
-<style>
+<style scoped>
+  #holder {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #D0E1F9;
+  }
   a:visited {
     text-decoration: none;
     color: #E47809;
