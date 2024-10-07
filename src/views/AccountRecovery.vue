@@ -1,30 +1,30 @@
+<script setup>
+import { useRouter } from 'vue-router';
+import RoundedBox from '../components/LoginFrame.vue';
+
+const router = useRouter();
+
+const gotoAccountRecoveryCode = () => {
+  router.push('/account-recovery-code');
+};
+</script>
+
 <template>
-    <RoundedBox id = 'loginframe'>
-        <div id = 'heading'>
+    <RoundedBox id="loginframe">
+        <div id="heading">
             <h1>Account Recovery</h1>
-            <h2>Forgot your password? Enter your email and we will send you a verification code to reset your password.
-            </h2>
+            <h2>Forgot your password? Enter your email and we will send you a verification code to reset your password.</h2>
         </div>
-        <div id = "email">
+        <div id="email">
             <label>Email</label>
-            <input type="text" name = "email" placeholder="you@example.com">
+            <input type="text" name="email" placeholder="you@example.com" />
         </div>
-        <div id = 'sign-in-button'>
-            <button id = "sign-in">Send Code</button>
+        <div id="sign-in-button">
+            <button id="sign-in" @click="gotoAccountRecoveryCode">Send Code</button>
         </div>
     </RoundedBox>
 </template>
 
-<script>
-import RoundedBox from '../components/LoginFrame.vue';
-
-export default {
-    name: 'account-recovery',
-    components: {
-        RoundedBox,
-    },
-};
-</script>
 
 <style>
     #sign-in-button {
