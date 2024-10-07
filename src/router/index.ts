@@ -2,6 +2,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import Auth from '../views/Auth.vue';  // Import the Auth page component
 import AccountRecovery from '../views/AccountRecovery.vue';  // Import the AccountRecovery page component
+import Schedule from '../views/Schedule.vue';
 
 const routes = [
   {
@@ -13,6 +14,11 @@ const routes = [
     path: '/account-recovery', // Path for Account Recovery page
     name: 'AccountRecovery',
     component: AccountRecovery, // Load the AccountRecovery page when the user visits "/account-recovery"
+  },
+  {
+    path: '/scheduler',
+    name: 'Schedule',
+    component: Schedule,
   }
 ];
 
