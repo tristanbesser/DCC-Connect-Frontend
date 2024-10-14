@@ -1,16 +1,42 @@
 <script setup lang="ts">
 
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
 defineOptions({
-        name: 'scheduler',
+    name: 'scheduler',
 });
 
+const options = ref(['Location 1', 'Location 2', 'Location 3']);
+const shifts = ref([]);
 
-const options = ['Location 1', 'Location 2', 'Location 3'];
+class Shift {
+    constructor(start_time, day, location, duration){
+        this.start_time = start_time;
+        this.day = day;
+        this.location = location;
+        this.duration = duration;
+    }
+}
 
+// Add initial shift
+shifts.value.push(new Shift(7, 0, 'main', 4));
+shifts.value.push(new Shift(4, 3, 'main', 8));
+shifts.value.push(new Shift(20, 3, 'main', 8));
+shifts.value.push(new Shift(14, 6, 'main', 4));
+
+function getShiftStyle(shift) {
+    return {
+        position: 'absolute',
+        top: `${50 + 50 * shift.day + shift.day * 3}px`,
+        left: `${4 + 4 * shift.start_time}%`,
+        width: `${4 * shift.duration}%`,
+        height:'50px',
+        backgroundColor: 'blue',
+    };
+}
 </script>
 
 
@@ -39,35 +65,22 @@ const options = ['Location 1', 'Location 2', 'Location 3'];
             </select>
 
         </div>
-        <div id = 'visual-schedule'>
-            <div> 7 AM</div>
-            <div> 8 AM</div>
-            <div> 9 AM</div>
-            <div> 10 AM</div>
-            <div> 11 AM</div>
-            <div> 12 AM</div>
-            <div> 1 PM</div>
-            <div> 2 PM</div>
-            <div> 3 PM</div>
-            <div> 4 PM</div>
-            <div> 5 PM</div>
-            <div> 6 PM</div>
-            <div> 7 PM</div>
-            <div> 8 PM</div>
-            <div> 9 PM</div>
-            <div> 10 PM</div>
-            <div> 11 PM</div>
-            <div> 12 PM</div>
-            <div> 1 AM</div>
-            <div> 2 AM</div>
-            <div> 3 AM</div>
-            <div> 4 AM</div>
-            <div> 5 AM</div>
-            <div> 6 AM</div>
-            
-
-
+        <div id="visual-schedule">
+            <div id="schedule-container">
+                <div v-for="(shift, index) in shifts" :key="index" :style="getShiftStyle(shift)">
+                    Shift: {{ shift.start_time }} - {{ shift.duration }} hours
+                </div>
+                <div id="schedule-day">Day</div>
+                <div id="schedule-day">Mon</div>
+                <div id="schedule-day">Tue</div>
+                <div id="schedule-day">Wed</div>
+                <div id="schedule-day">Thu</div>
+                <div id="schedule-day">Fri</div>
+                <div id="schedule-day">Sat</div>
+                <div id="schedule-day">Sun</div>
+            </div>
         </div>
+
 
     </div>
     
@@ -78,10 +91,36 @@ const options = ['Location 1', 'Location 2', 'Location 3'];
 
 
 <style>
+    #schedule-shift{
+        position: absolute;
+        top: 50px;
+        left: 16%;
+        height:50px;
+        width:50px;
+        background-color: aquamarine;
+    }
+    #schedule-container {
+        display:flex;
+        flex-direction: column;
+        width: 100%;
+        height:100%;
+        background-color: rgb(188, 141, 141);
+        position:relative;
+    }
+    #schedule-day {
+        display:flex;
+        flex-direction: row;
+        height:50px;
+        background-color: rgb(105, 56, 56);
+        border-bottom: 2px solid black;
+        align-items: center;
+        justify-content: space-between;
+
+    }
     #visual-schedule {
         display: flex;
         flex-direction: row;
-        height:auto;
+        height:100%;
         justify-content: space-between;
         background-color: #b8b8b8;
     }
