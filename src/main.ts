@@ -1,6 +1,9 @@
-import './assets/main.css'
+// src/main.ts (for TypeScript) or main.js (for JavaScript)
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';  // Import the router
 
-import { createApp } from 'vue'
-import App from './App.vue'
+const app = createApp(App);
 
-createApp(App).mount('#app')
+app.use(router);  // Use the router in the Vue app
+app.mount('#app');
