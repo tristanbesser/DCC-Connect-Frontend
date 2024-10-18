@@ -5,7 +5,6 @@ import Navbar from '@/components/Navbar.vue';
 </script>
 
 <template>
-    <Navbar></Navbar>
     <div id="holder">
         <RoundedBox id="frame">
             <div id="heading">

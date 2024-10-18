@@ -1,13 +1,13 @@
 <template>
     <div id ="navbar">
         <ul>
-            <li><a href="account.asp"><img src="../../public/Profile.png"></a></li>
+            <li><a href="account.asp"><img src="../../Profile.png"></a></li>
 
-            <li><a href="contact.asp"><img src="../../public/Info.png">Info</a></li>
+            <li><a href="contact.asp"><img src="../../Info.png">Info</a></li>
 
-            <li><a href="news.asp"><img src="../../public/TimeOff.png">Time Off</a></li>
+            <li><a href="news.asp"><img src="../../TimeOff.png">Time Off</a></li>
 
-            <li><a href="default.asp"><img src="../../public/Schedule.png">Schedule</a></li>
+            <li><a href="default.asp"><img src="../../Schedule.png">Schedule</a></li>
         </ul>
     </div>
 </template>
@@ -30,7 +30,7 @@ img {
 #navbar{
     display: flex;
     position: sticky;
-    background-color: #D0E1F9;
+    background-color: #F7F8F9;
     overflow: hidden;
     list-style-type: none;
     top: 0;
