@@ -123,7 +123,7 @@ function getShiftStyle(shift) {
 
 
 
-<style>
+<style scoped>
     #schedule-shift{
         position: absolute;
         top: 50px;
