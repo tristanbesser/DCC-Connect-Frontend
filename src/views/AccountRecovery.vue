@@ -28,7 +28,7 @@ const gotoAccountRecoveryCode = () => {
 </template>
 
 
-<style>
+<style scoped>
   #holder {
     height: 100%;
     display: flex;

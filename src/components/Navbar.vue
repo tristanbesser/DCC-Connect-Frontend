@@ -51,7 +51,7 @@ img {
 #navbar{
     display: flex;
     position: sticky;
-    background-color: #D0E1F9;
+    background-color: #F7F8F9;
     overflow: hidden;
     list-style-type: none;
     top: 0;

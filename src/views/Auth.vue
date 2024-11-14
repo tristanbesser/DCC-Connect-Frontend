@@ -25,18 +25,9 @@ const goToSchedule = () => {
           <h1>DCC Connect</h1>
           <h2>Welcome to DCC Connect, a simplified scheduling platform for DCC staff.</h2>
         </div>
-        <div id = "btn-group">
-          <button id = "employee">Employee</button>
-          <button id = "manager">Manager</button>
-        </div>
-        <div id = "email">
-          <label>Email</label>
-          <input type="text" name = "email" placeholder="you@example.com">
-        </div>
-        <div id = "password">
-          <label>Password</label>
-          <input type="text" name = "password" placeholder="Enter your password">
-        </div>
+        <form action="/account-recovery">
+          
+        </form>
         <div>
           <button id = "sign-in">Sign In</button>
         </div>
@@ -52,7 +43,12 @@ const goToSchedule = () => {
 
   #holder {
     height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #D0E1F9;
   }
+
   a:visited {
     text-decoration: none;
     color: #E47809;
@@ -108,6 +104,15 @@ const goToSchedule = () => {
   }
 
   input[type=text], select {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 15px;
+    box-sizing: border-box;
+  }
+
+  input[type=password], select {
     width: 100%;
     padding: 12px 20px;
     margin: 8px 0;
