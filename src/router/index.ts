@@ -5,6 +5,11 @@ import AccountRecovery from '../views/AccountRecovery.vue';  // Import the Accou
 import AccountRecoveryCode from '../views/AccountRecoveryCode.vue';
 import ChangePassword from '../views/ChangePassword.vue';
 import Account from '../views/Account.vue';
+import Schedule from '../views/Schedule.vue';
+import TimeOff from '../views/TimeOff.vue';
+import Request from '../views/Request.vue';
+import Info from '../views/Info.vue';
+
 
 const routes = [
   {
@@ -31,7 +36,33 @@ const routes = [
     path: '/account',
     name: 'Account',
     component: Account
+  },
+  {
+    path: '/scheduler',
+    name: 'Schedule',
+    component: Schedule,
+  },
+  {
+    path: '/time-off',
+    name: 'TimeOff',
+    component: TimeOff,
+  },
+  {
+    path: '/request',
+    name: 'Request',
+    component: Request,
+  },
+  {
+    path: '/account',
+    name: 'Account',
+    component: Account,
+  },
+  {
+    path: '/info',
+    name: 'Info',
+    component: Info,
   }
+  
 ];
 
 const router = createRouter({

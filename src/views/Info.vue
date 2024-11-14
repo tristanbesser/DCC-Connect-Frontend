@@ -9,18 +9,20 @@ import Navbar from '@/components/Navbar.vue';
 const router = useRouter();
 
 defineOptions({
-    name: 'account',
+    name: 'info',
 });
 
 </script>
 
 <template>
     <Navbar></Navbar>
-    <h1>Account</h1>
-    <p>Name: </p>
-    <p>Email:</p>
-    <p>Start Date:</p>
-    <p id="signOut">Sign Out</p>
+    <h1>Info</h1>
+    <p>Hours scheduled this week: </p>
+    <p>Role:</p>
+    <p>Overtime this week:</p>
+    <p>Total hours this year:</p>
+    <p>Vaction time accrued:</p>
+    <p>Sick time accrued:</p>
 </template>
 
 <style>

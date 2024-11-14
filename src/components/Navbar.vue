@@ -1,23 +1,44 @@
 <template>
-    <div id ="navbar">
-        <ul>
-            <li><a href="account.asp"><img src="../../Profile.png"></a></li>
-
-            <li><a href="contact.asp"><img src="../../Info.png">Info</a></li>
-
-            <li><a href="news.asp"><img src="../../TimeOff.png">Time Off</a></li>
-
-            <li><a href="default.asp"><img src="../../Schedule.png">Schedule</a></li>
-        </ul>
+    <div id="navbar">
+      <ul>
+        <li><a @click="goToAccount"><img src="../../public/Profile.png"></a></li>
+        <li><a @click="goToInfo"><img src="../../public/Info.png">Info</a></li>
+        <li><a @click="goToTimeOff"><img src="../../public/TimeOff.png">Time Off</a></li>
+        <li><a @click="goToSchedule"><img src="../../public/Schedule.png">Schedule</a></li>
+      </ul>
     </div>
-</template>
-
-<script>
-export default {
-    name: 'Navbar'
-}
-</script>
-
+  </template>
+  
+  <script>
+  import { useRouter } from 'vue-router'; // Import Vue Router
+  
+  export default {
+    name: 'Navbar',
+    setup() {
+      const router = useRouter();
+      const goToSchedule = () => {
+        router.push('./scheduler'); // Push to the route
+      };
+      const goToTimeOff = () => {
+        router.push('./time-off'); // Push to the route
+      };
+      const goToAccount = () => {
+        router.push('./account'); // Push to the route
+      };
+      const goToInfo = () => {
+        router.push('./info'); // Push to the route
+      };
+  
+      return {
+        goToSchedule,
+        goToTimeOff,
+        goToAccount,
+        goToInfo
+      };
+    },
+  };
+  </script>
+  
 <style scoped>
 p {
     font-size: 64px;
