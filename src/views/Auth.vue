@@ -26,11 +26,18 @@ const goToSchedule = () => {
           <h2>Welcome to DCC Connect, a simplified scheduling platform for DCC staff.</h2>
         </div>
         <form action="/account-recovery">
-          
+          <div id = "email">
+            <label>Email</label>
+              <input type="text" name = "email" placeholder="you@example.com">
+          </div>
+          <div id = "password">
+            <label>Password</label>
+              <input type="password" name = "password" placeholder="Enter your password">
+          </div>         
+          <div>
+            <button id = "sign-in">Sign In</button>
+          </div>
         </form>
-        <div>
-          <button id = "sign-in">Sign In</button>
-        </div>
         <div id = "forgot-pass">
           <a @click="gotoAccountRecovery">Forgot Password</a>
         </div>
