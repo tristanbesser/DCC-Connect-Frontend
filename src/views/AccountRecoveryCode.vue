@@ -29,6 +29,31 @@
 </template>
 
 <style scoped>
+  h1 {
+    font-size: 18px;
+    line-height: 1.4;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  h2 {
+    font-family: 'Poppins';
+    margin-bottom: 10px;
+    margin-top: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    font-weight: 400;
+    color: #2857A3;
+  }
+
+  #heading {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    font-family: 'Poppins';
+    color: #2857A3;
+  }
+  
   #holder {
     height: 100%;
     display: flex;
@@ -59,10 +84,6 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-  }
-
-  h2 {
-    color: #2857A3;
   }
 
   label {

@@ -19,5 +19,6 @@
     width: 624px;
     background: white;
     border-radius: 15px;
+    box-shadow: 0px 0px 8px 6px #C0C0C0;
   }
   </style>
