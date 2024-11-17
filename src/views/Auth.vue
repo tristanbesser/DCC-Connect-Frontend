@@ -1,6 +1,36 @@
 <script setup lang="ts">
 import RoundedBox from '../components/LoginFrame.vue'
 import { useRouter } from 'vue-router';
+import { ref } from 'vue';
+import axios from 'axios';
+
+const formData = ref({
+    email: "",
+    attemptedPassword: ""
+})
+
+async function loginProcess() {
+  const apiurl = "https://localhost:32772/user/login"
+
+  const data = {
+        email: formData._rawValue.email, 
+        attemptedPassword: formData._rawValue.attemptedPassword
+    }
+
+    try {
+        const response = await axios.post(apiurl, data, {
+            headers: {
+                "Content-Type": "application/json"
+            },
+            withCredentials: true
+        })
+        console.log("registered fucknigga!")
+    }
+    catch(err) {
+        console.log(err)
+    }
+}
+
 
 const router = useRouter();
 
@@ -25,14 +55,14 @@ const goToSchedule = () => {
           <h1>DCC Connect</h1>
           <h2>Welcome to DCC Connect, a simplified scheduling platform for DCC staff.</h2>
         </div>
-        <form action="/account-recovery">
+        <form @submit.prevent="loginProcess" action="/account-recovery">
           <div id = "email">
             <label>Email</label>
-              <input type="text" name = "email" placeholder="you@example.com">
+              <input v-model="formData.email" type="text" name = "email" placeholder="you@example.com">
           </div>
           <div id = "password">
             <label>Password</label>
-              <input type="password" name = "password" placeholder="Enter your password">
+              <input v-model="formData.attemptedPassword" type="password" name = "password" placeholder="Enter your password">
           </div>         
           <div>
             <button id = "sign-in">Sign In</button>
