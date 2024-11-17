@@ -135,33 +135,6 @@ const goToSchedule = () => {
     font-family: 'Poppins';
     color: #2857A3;
   }
- 
-  #manager {
-    font-family: 'Poppins';
-    background-color: #2857A3;
-    border: none;
-    border-radius: 15px;
-    color: #f0f0f0;
-    padding: 10px 50px;
-    text-align: center;
-    text-decoration: none;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  
-  
-  #employee {
-    font-family: 'Poppins';
-    background-color: #2857A3;
-    border: none;
-    border-radius: 15px;
-    color: #f0f0f0;
-    padding: 10px 50px;
-    text-align: center;
-    text-decoration: none;
-    font-size: 16px;
-    cursor: pointer;
-  }
   
   #heading {
     display: flex;
