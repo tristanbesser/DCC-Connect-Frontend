@@ -9,8 +9,10 @@ const formData = ref({
     credential: ""
 })
 
+const errorMessage = ref("")
+
 async function loginProcess() {
-  const apiurl = "https://localhost:32772/user/login"
+  const apiurl = "https://localhost:32776/user/login"
 
   const data = {
         email: formData._rawValue.email, 
@@ -24,9 +26,15 @@ async function loginProcess() {
             },
             withCredentials: true
         })
+        if (response.status === 200) { // Assuming 200 indicates successful login
+      // Navigate to the scheduler page
+      router.push('/scheduler');
+    } else {
+      errorMessage.value = response.data.message || "Login failed. Please try again.";
+    }
     }
     catch(err) {
-        console.log(err)
+      errorMessage.value = err.response?.data?.message || "Login failed. Please try again.";
     }
 }
 
@@ -65,6 +73,9 @@ const goToSchedule = () => {
           </div>         
           <div>
             <button id = "sign-in">Sign In</button>
+          </div>
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
           </div>
         </form>
         <div id = "forgot-pass">
@@ -207,4 +218,11 @@ const goToSchedule = () => {
     background: white;
     border-radius: 15px;
   }
+
+  .error-message {
+  color: red;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 10px;
+  text-align: center;
+}
 </style>
