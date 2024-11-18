@@ -71,6 +71,7 @@ defineOptions({
         justify-content: center;
         align-items: center;
         font-family: "Poppins";
+        padding: 25px;
     }
     #holder {
         display: flex;

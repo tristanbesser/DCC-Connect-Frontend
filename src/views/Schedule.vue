@@ -13,8 +13,12 @@ defineOptions({
 });
 
 const options = ref(['Location 1', 'Location 2', 'Location 3', 'Show All']);
+const employees = ref(['My shifts', 'John Smits', 'Goku', 'Chris']);// this is a temp list
 const shifts = ref([]);
 const selectedOption = ref('Show All');
+const defaultEmployee = ref('My shifts');
+const colors = ['var(--pop1)', 'var(--pop2)', 'var(--pop3)', 'var(--pop4)', 'var(--pop5)'];
+var colorIndex = 0;
 
 class Shift {
     constructor(start_time, day, location, duration){
@@ -24,29 +28,77 @@ class Shift {
         this.duration = duration;
     }
 }
-
-// Add initial shift
+const goToCreateShifts = () => {
+    router.push('./create-shifts'); // Change this to the actual route
+};
+// Add initial shifts for testing
 shifts.value.push(new Shift(7, 0, 'Location 1', 4));
 shifts.value.push(new Shift(4, 3, 'Location 2', 8));
 shifts.value.push(new Shift(20, 3, 'Location 1', 8));
 shifts.value.push(new Shift(14, 6, 'Location 3', 4));
 
+shifts.value.push(new Shift(14, 1, 'Location 2', 4));
+shifts.value.push(new Shift(20, 2, 'Location 4', 4));
+shifts.value.push(new Shift(12, 0, 'Location 1', 4));
+shifts.value.push(new Shift(1, 4, 'Location 2', 4));
+shifts.value.push(new Shift(0, 5, 'Location 1', 4));
+
+
+
+
 function getShiftStyle(shift) {
     // Use the selectedOption value and compare it with the shift location
     if(shift.location === selectedOption.value || selectedOption.value === 'Show All'){
+        colorIndex += 1;
+        
+        let currentColor = colors[colorIndex % 5];
+        if (colorIndex === shifts.value.length) { // Use 'value' for reactivity if 'shifts' is a ref
+            colorIndex = 0;
+        }
         return {
+            
             position: 'absolute',
-            top: `${50 + 50 * shift.day + 2 + shift.day * 1.5}px`,
+            top: `${12.5 + 12.5 * shift.day}%`,
             left: `${4 + 4 * shift.start_time}%`,
             width: `${4 * shift.duration}%`,
-            height: '50px',
-            backgroundColor: 'blue',
-            color: 'black',
+            height: '12.5%',
+            backgroundColor: currentColor,
+            color: 'var(--text1)',
             display: 'flex',                // Center content
             justifyContent: 'center',       // Horizontally center
             alignItems: 'center',           // Vertically center
             borderRadius: '10px',           // Rounded corners
         };
+    }
+    else{
+        return {
+            display:'none',
+        }
+    }
+    return {};
+}
+function getListStyle(shift) {
+    // Use the selectedOption value and compare it with the shift location
+    if(shift.location === selectedOption.value || selectedOption.value === 'Show All'){
+        colorIndex += 1;
+        
+        let currentColor = colors[colorIndex % colors.length];
+        if (colorIndex === shifts.value.length) { // Use 'value' for reactivity if 'shifts' is a ref
+            colorIndex = 0;
+        }
+        return {
+            width: `95%`,
+            height: '60px',
+            backgroundColor: 'var(--background)', // Apply the current color for the background
+            color: 'var(--text1)',         // Text color
+            display: 'flex',               // Center content
+            justifyContent: 'center',      // Horizontally center
+            alignItems: 'center',          // Vertically center
+            borderRadius: '10px',          // Rounded corners
+            margin: '2px',                 // Add spacing
+            borderLeft: `5px solid ${currentColor}`, // Correctly interpolate the variable
+        };
+
     }
     else{
         return {
@@ -62,20 +114,74 @@ function getShiftStyle(shift) {
     <div id = 'scheduler'>
         <Navbar></Navbar>
         
-            
+        <div style="text-align: center; font-size: 18px; margin-top: 10px">Options</div>
         <div id = 'filters'>
-            <i class="fa-solid fa-sliders fa-2x"></i>
-            <select id="options" v-model="selectedOption">
-                <option v-for="option in options" :key="option" :value="option">
-                    {{ option }}
-                </option>
-            </select>
+            
+                <div id="filter-options">
+                    <select id="options" v-model="selectedOption">
+                        <option v-for="option in options" :key="option" :value="option" id="">
+                            {{ option }}
+                        </option>
+                    </select>
+                </div>
+                <div id="filter-options">
+                    <select id="options" v-model="defaultEmployee">
+                        <option v-for="option in employees" :key="option" :value="option" id="">
+                            {{ option }}
+                        </option>
+                    </select>
+                </div>
+            
+            
+                <div id="filter-options">
+                <button 
+                    class="create-shift-btn" 
+                    @click="goToCreateShifts"
+                >
+                    Create Shifts
+                </button>
+            </div>
+            
+            
 
         </div>
-        <div id="visual-schedule">
+        <div id="split-screen-container">
+            <div id="shift-list-container">
+                <p id="Shift-list-title"> Shifts</p>
+                <div id="Shift-list-scroll">
+                    <div v-for="(shift, index) in shifts" :key="index" :style="getListStyle(shift)">
+                        <div id="shift-list-info">
+                            <div v-if="(shift.day == 0)"> Monday</div>
+                            <div v-if="(shift.day == 1)"> Tuesday</div>
+                            <div v-if="(shift.day == 2)"> Wednesday</div>
+                            <div v-if="(shift.day == 3)"> Thursday </div> <!-- replace this with date when finally link backend -->
+                            <div v-if="(shift.day == 4)"> Friday</div>
+                            <div v-if="(shift.day == 5)"> Saturday</div>
+                            <div v-if="(shift.day == 6)"> Sunday</div>
+                            <div>{{shift.location}}</div> 
+                            <div>{{ shift.start_time }} - {{ shift.start_time + shift.duration }}</div>
+                        </div>
+                        
+
+                        <button
+                            class="btn btn-secondary dropdown-toggle"
+                            type="button"
+                            id="dropdownMenuButton"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
+                            
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <li><a class="dropdown-item" href="#">Offer Shift</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+            </div>
             <div id="schedule-container">
                 <div v-for="(shift, index) in shifts" :key="index" :style="getShiftStyle(shift)">
-                    Shift: {{ shift.start_time }} - {{ shift.duration }} hours
+                    {{shift.location}}: {{ shift.start_time + 7}} - {{ shift.start_time + shift.duration + 7}}
                 </div>
                 <div id="schedule-day">
                     <div> Day </div>
@@ -114,7 +220,6 @@ function getShiftStyle(shift) {
             </div>
         </div>
 
-
     </div>
     
 
@@ -124,82 +229,146 @@ function getShiftStyle(shift) {
 
 
 <style scoped>
-    #schedule-shift{
-        position: absolute;
-        top: 50px;
-        left: 16%;
-        height:50px;
-        width:50px;
+    .create-shift-btn {
+        background-color: var(--second); /* Customize the background */
+        color: var(--text1); /* Text color */
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%; /* Ensures full width */
+        text-align: center;
     }
-    #schedule-container {
-        display:flex;
-        flex-direction: column;
-        width: 100%;
-        height:100%;
-        position:relative;
-    }
-    #schedule-day {
-        display:flex;
-        flex-direction: row;
-        height:50px;
-        border-bottom: 2px solid #A0A0A0;
-        align-items: center;
-        justify-content: space-between;
 
+    .create-shift-btn:hover {
+        background-color: var(--first); /* Change color on hover */
+        color: var(--third);
     }
-    #visual-schedule {
+
+    /* Styling for filter options */
+    #filters {
         display: flex;
         flex-direction: row;
-        height:100%;
-        justify-content: space-between;
-        background-color: white;
-        color: #2857A3;
+        justify-content: space-around; /* Space out items more evenly */
+        align-items: center; /* Center items vertically */
+        padding: 15px 20px;
+        background-color: #ffffff;
+        color: var(--first);
+        border-bottom: 2px solid black;
+        margin: 4px;
     }
-    
+
+    #filter-options {
+        width: 30%; /* Adjusted width for better alignment */
+        margin: 5px;
+        display: flex;
+        justify-content: center; /* Center the dropdown */
+        align-items: center; /* Center the content vertically */
+    }
+
+    select {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid var(--text1);
+        border-radius: 5px;
+        background-color: var(--background);
+        color: var(--text1);
+        cursor: pointer;
+    }
+
+    select:focus {
+        border-color: var(--first);
+        outline: none;
+    }
+
+    /* Styling for shift list info */
+    #shift-list-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0 10px;
+        box-sizing: border-box;
+        color: var(--first);
+    }
+
+    #Shift-list-scroll {
+        overflow-y: scroll;
+        width: 90%;
+        height: 400px;
+    }
+
+    #Shift-list-title {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--text1);
+        font-size: 50px;
+        width: 60%;
+        border-bottom: 5px solid var(--first);
+    }
+
+    /* Styling for split screen */
+    #split-screen-container {
+        display: flex;
+        margin: 5px;
+        border: 5px;
+        width: 100%;
+    }
+
+    #shift-list-container {
+        width: 33%;
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 5px;
+        border: 5px;
+    }
+
+    #schedule-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        min-height: 80px;
+        position: relative;
+        flex: 4;
+        margin-right: 10px;
+        border-left: 2px solid var(--text2);
+        padding-top: 0;
+    }
+
+    #schedule-day {
+        display: flex;
+        flex-direction: row;
+        height: 12.5%;
+        border-bottom: 2px solid var(--text2);
+        align-items: center;
+        justify-content: space-between;
+        height: 100%;
+        min-height: 60px;
+    }
+
+    /* General styling for the scheduler */
     #scheduler {
-        color: black;
-        display:flex;
+        color: var(--text1);
+        display: flex;
         flex-direction: column;
         justify-content: flex-end;
-        align-items: initial; 
-        width:100%;
+        align-items: initial;
+        width: 100%;
         margin: 0;
         padding: 0;
     }
-    #heading {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between; /* Space between logo, nav, and button */
-        align-items: center; /* Center items vertically */
-        padding: 15px 20px; /* Padding around the header */
-        background-color: #ffffff; /* Background color */
-        color: #4f4f4f; /* Text color */
-        border-bottom: 2px solid black;
-        
-    }
-    #filters {
-        display: flex;
-        flex-direction: column;
-        justify-content: center; /* Space between logo, nav, and button */
-        align-items: center; /* Center items vertically */
-        padding: 15px 20px; /* Padding around the header */
-        background-color: #ffffff; /* Background color */
-        color: #4f4f4f; /* Text color */
-        border-bottom: 2px solid black;
-        
-    }
+
+    /* Navbar and other containers */
     #nav-items {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        width:150px;
-    }
-    #html, body{
-        margin: 0;
-        padding: 0;
-        
-    }
-    #app {
- 
+        width: 150px;
     }
 </style>

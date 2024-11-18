@@ -11,6 +11,8 @@ import Request from '../views/Request.vue';
 import Info from '../views/Info.vue';
 import Registration from '../views/Registration.vue';
 
+import CreateShifts from '../views/CreateShifts.vue';
+
 
 const routes = [
   {
@@ -67,6 +69,11 @@ const routes = [
     path: '/registration',
     name: 'Registration',
     component: Registration
+  },
+  {
+    path: '/create-shifts',
+    name: 'CreateShifts',
+    component: CreateShifts,
   }
   
 ];
