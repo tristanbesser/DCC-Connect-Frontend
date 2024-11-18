@@ -38,6 +38,7 @@ defineOptions({
 </template>
 
 <style scoped>
+
   #heading {
     display: flex;
     justify-content: center;
@@ -69,7 +70,7 @@ defineOptions({
   }
 
   #holder {
-    height: 100%;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;

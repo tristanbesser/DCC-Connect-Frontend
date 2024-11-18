@@ -30,7 +30,7 @@ const gotoAccountRecoveryCode = () => {
 
 <style scoped>
   #holder {
-    height: 100%;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
