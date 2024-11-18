@@ -63,6 +63,11 @@ defineOptions({
     font-family: 'Poppins';
     cursor: pointer;
   }
+
+  #sign-out:hover {
+    background-color: #c2352b;
+  }
+
   #holder {
     height: 100%;
     display: flex;
