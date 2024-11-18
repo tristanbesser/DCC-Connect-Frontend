@@ -73,6 +73,7 @@ li {
   display: flex;
   align-items: center;
   float: right;
+  cursor: pointer;
 }
 
 a {

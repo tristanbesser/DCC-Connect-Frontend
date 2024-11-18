@@ -4,6 +4,7 @@ import { faAlignJustify } from '@fortawesome/free-solid-svg-icons/faAlignJustify
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
+import RoundedBox from '../components/LoginFrame.vue';
 
 
 const router = useRouter();
@@ -16,22 +17,67 @@ defineOptions({
 
 <template>
     <Navbar></Navbar>
-    <h1>Info</h1>
-    <p>Hours scheduled this week: </p>
-    <p>Role:</p>
-    <p>Overtime this week:</p>
-    <p>Total hours this year:</p>
-    <p>Vaction time accrued:</p>
-    <p>Sick time accrued:</p>
+    <div id="heading">
+        <h1>Location Information</h1>
+    </div>
+    <div id="holder">
+        <RoundedBox>
+            <p>Woodside</p>
+        </RoundedBox>
+        <RoundedBox>
+            <p>Indiana</p>
+        </RoundedBox>
+        <RoundedBox>
+            <p>419 Indiana</p>
+        </RoundedBox>
+        <RoundedBox>
+            <p>Ridge</p>
+        </RoundedBox>
+        <RoundedBox>
+            <p>State Street</p>
+        </RoundedBox>
+        <RoundedBox>
+            <p>Dakota</p>
+        </RoundedBox>
+        <RoundedBox>
+            <p>Lunn</p>
+        </RoundedBox>
+        <RoundedBox>
+            <p>King</p>
+        </RoundedBox>
+        <RoundedBox>
+            <p>Bond</p>
+        </RoundedBox>
+        <RoundedBox>
+            <p>Maplewood</p>
+        </RoundedBox>
+        <RoundedBox>
+            <p>French</p>
+        </RoundedBox>
+        <RoundedBox>
+            <p>Greenwood</p>
+        </RoundedBox>
+    </div>
 </template>
 
-<style>
-#signOut{
-    margin: 10px;
-    padding: 5px;
-    color:red;
-    background-color: pink;
-    border-radius: 5%;
-    width: 10%;
-}
+<style scoped>
+    .rounded-box {
+        margin: 10px;
+    }
+    #heading {
+        display: flex;
+        color: #1F4691;
+        background-color: #D0E1F9;
+        justify-content: center;
+        align-items: center;
+        font-family: "Poppins";
+    }
+    #holder {
+        display: flex;
+        height: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+        font-family: "Poppins";
+        background-color: #D0E1F9;
+    }
 </style>
