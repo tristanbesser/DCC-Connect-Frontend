@@ -11,7 +11,7 @@
   
   <script>
   import { useRouter } from 'vue-router'; // Import Vue Router
-  
+
   export default {
     name: 'Navbar',
     setup() {
@@ -33,7 +33,7 @@
         goToSchedule,
         goToTimeOff,
         goToAccount,
-        goToInfo
+        goToInfo,
       };
     },
   };
@@ -51,12 +51,12 @@ img {
 #navbar{
     display: flex;
     position: sticky;
-    background-color: #D0E1F9;
+    background-color: var(--second);
     overflow: hidden;
     list-style-type: none;
     top: 0;
     justify-content: right;
-    box-shadow: 0px 4px 5px #C0C0C0;
+    box-shadow: 0px 4px 5px var(--third);
 }
 ul {
   display: flex;
@@ -69,20 +69,53 @@ ul {
   padding: 0;
 }
 
-li {
-  display: flex;
-  align-items: center;
-  float: right;
-}
-
 a {
-  display: flex;
+  display: flex;                /* Ensure it's a flex container */
   font-family: 'Poppins';
   color: #2857A3;
   text-decoration: none;
   align-items: center;
   text-align: center;
   padding: 8px;
+  cursor: pointer;             /* Add this line to make the cursor a pointer */
+  width: 100%;                  /* Ensure the anchor takes up the full width of the li */
 }
 
+li {
+  display: flex;
+  align-items: center;
+  float: right;
+  width: 100%;                  /* Ensure li takes up the full width for the link */
+}
+
+
 </style>
+<!-- const data = {for use in the integration of backend and frontend, very basic commands for refference later!!
+  shiftPeriod: {
+    start: "2024-11-15T19:50:04.613Z",
+    end: "2024-11-15T19:50:04.613Z"
+  },
+  location: "string",
+  role: 0,
+  employeeID: "string"
+};
+
+fetch('http://localhost:5207/shift/create/', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(data)
+})
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('Success:', data);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  }); -->

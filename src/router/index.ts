@@ -9,6 +9,7 @@ import Schedule from '../views/Schedule.vue';
 import TimeOff from '../views/TimeOff.vue';
 import Request from '../views/Request.vue';
 import Info from '../views/Info.vue';
+import CreateShifts from '../views/CreateShifts.vue';
 
 
 const routes = [
@@ -61,6 +62,11 @@ const routes = [
     path: '/info',
     name: 'Info',
     component: Info,
+  },
+  {
+    path: '/create-shifts',
+    name: 'CreateShifts',
+    component: CreateShifts,
   }
   
 ];
