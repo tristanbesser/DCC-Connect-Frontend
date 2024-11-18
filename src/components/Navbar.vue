@@ -51,12 +51,12 @@ img {
 #navbar{
     display: flex;
     position: sticky;
-    background-color: var(--second);
+    background-color: #F7F8F9;
     overflow: hidden;
     list-style-type: none;
     top: 0;
     justify-content: right;
-    box-shadow: 0px 4px 5px var(--third);
+    box-shadow: 0px 4px 5px #C0C0C0;
 }
 ul {
   display: flex;
