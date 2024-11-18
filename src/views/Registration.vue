@@ -31,7 +31,6 @@ async function registrationProcess() {
             },
             withCredentials: true
         })
-        console.log("registered fucknigga!")
     }
     catch(err) {
         console.log(err)

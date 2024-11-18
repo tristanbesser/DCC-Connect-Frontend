@@ -6,7 +6,7 @@ import axios from 'axios';
 
 const formData = ref({
     email: "",
-    attemptedPassword: ""
+    credential: ""
 })
 
 async function loginProcess() {
@@ -14,7 +14,7 @@ async function loginProcess() {
 
   const data = {
         email: formData._rawValue.email, 
-        attemptedPassword: formData._rawValue.attemptedPassword
+        credential: formData._rawValue.credential
     }
 
     try {
@@ -61,7 +61,7 @@ const goToSchedule = () => {
           </div>
           <div id = "password">
             <label>Password</label>
-              <input v-model="formData.attemptedPassword" type="password" name = "password" placeholder="Enter your password">
+              <input v-model="formData.credential" type="password" name = "password" placeholder="Enter your password">
           </div>         
           <div>
             <button id = "sign-in">Sign In</button>
