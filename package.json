@@ -11,7 +11,11 @@
     "type-check": "vue-tsc --build --force"
   },
   "dependencies": {
+<<<<<<< HEAD
     "axios": "^1.7.7",
+=======
+    "bootstrap": "^5.3.3",
+>>>>>>> scheduler-dev
     "node": "^22.9.0",
     "vue": "^3.5.10",
     "vue-router": "^4.4.5"

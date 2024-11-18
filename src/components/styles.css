@@ -2,3 +2,17 @@ html, body {
     height: 100%;
     margin: 0;
 }
+:root {
+    --first: #2857A3;
+    --second: #D0E1F9;
+    --third: #E0F0FF;
+    --background: #F7F8F9;
+    --pop1: #E47809;
+    --pop2: #FFA55F;
+    --pop3: #4CAF50;
+    --pop4: #F44336;
+    --pop5: #FFC107;
+    --text1: #181616ee;
+    --text2: #4e4b4bee;
+    
+};

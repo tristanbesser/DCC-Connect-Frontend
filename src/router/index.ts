@@ -9,7 +9,11 @@ import Schedule from '../views/Schedule.vue';
 import TimeOff from '../views/TimeOff.vue';
 import Request from '../views/Request.vue';
 import Info from '../views/Info.vue';
+<<<<<<< HEAD
 import Registration from '../views/Registration.vue';
+=======
+import CreateShifts from '../views/CreateShifts.vue';
+>>>>>>> scheduler-dev
 
 
 const routes = [
@@ -64,9 +68,15 @@ const routes = [
     component: Info,
   },
   {
+<<<<<<< HEAD
     path: '/registration',
     name: 'Registration',
     component: Registration
+=======
+    path: '/create-shifts',
+    name: 'CreateShifts',
+    component: CreateShifts,
+>>>>>>> scheduler-dev
   }
   
 ];
