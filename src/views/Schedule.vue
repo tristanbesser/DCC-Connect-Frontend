@@ -119,14 +119,14 @@ function getListStyle(shift) {
             
                 <div id="filter-options">
                     <select id="options" v-model="selectedOption">
-                        <option v-for="option in options" :key="option" :value="option" id="Filters">
+                        <option v-for="option in options" :key="option" :value="option" id="">
                             {{ option }}
                         </option>
                     </select>
                 </div>
                 <div id="filter-options">
                     <select id="options" v-model="defaultEmployee">
-                        <option v-for="option in employees" :key="option" :value="option" id="Filters">
+                        <option v-for="option in employees" :key="option" :value="option" id="">
                             {{ option }}
                         </option>
                     </select>
@@ -246,117 +246,129 @@ function getListStyle(shift) {
         color: var(--third);
     }
 
-    
+    /* Styling for filter options */
+    #filters {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around; /* Space out items more evenly */
+        align-items: center; /* Center items vertically */
+        padding: 15px 20px;
+        background-color: #ffffff;
+        color: var(--first);
+        border-bottom: 2px solid black;
+        margin: 4px;
+    }
+
+    #filter-options {
+        width: 30%; /* Adjusted width for better alignment */
+        margin: 5px;
+        display: flex;
+        justify-content: center; /* Center the dropdown */
+        align-items: center; /* Center the content vertically */
+    }
+
+    select {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid var(--text1);
+        border-radius: 5px;
+        background-color: var(--background);
+        color: var(--text1);
+        cursor: pointer;
+    }
+
+    select:focus {
+        border-color: var(--first);
+        outline: none;
+    }
+
+    /* Styling for shift list info */
     #shift-list-info {
         display: flex;
-        justify-content: space-between; /* Space items evenly, with the first and last aligned to the edges */
-        align-items: center;           /* Vertically center items */
-        width: 100%;                   /* Ensure it spans the full width of the container */
-        padding: 0 10px;               /* Optional: Add padding for inner spacing */
-        box-sizing: border-box;        /* Ensure padding doesn't affect width calculation */
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0 10px;
+        box-sizing: border-box;
         color: var(--first);
     }
 
     #Shift-list-scroll {
-        overflow-y:scroll; /* Enable vertical scrolling */
-        overflow-x: hidden;
-        width:90%;
+        overflow-y: scroll;
+        width: 90%;
         height: 400px;
     }
-    #Shift-list-title {
-        display: flex;                  /* Use flexbox */
-        justify-content: center;        /* Horizontally center the text */
-        align-items: center;            /* Vertically center the text */
-        color: var(--text1);            /* Use your custom color */
-        font-size: 50px;                /* Adjust text size */
-        width: 60%;                    /* Full width container */
-        height: auto;                   /* Adjust height to content */
-        text-align: center;             /* Ensure the text is centered inside */
-        border-bottom: 5px solid var(--first); 
 
-    }
-    #split-screen-container {
-        width: 100%;
-        display:flex;
-        margin:5px;
-        border:5px;
-    }
-    #shift-list-container{
-        width:33%;
-        flex:2;
-        size: 20px;
+    #Shift-list-title {
+        display: flex;
+        justify-content: center;
         align-items: center;
-        justify-content: center;   
-        justify-items: center; 
-        margin:5px;
-        border:5px;
+        color: var(--text1);
+        font-size: 50px;
+        width: 60%;
+        border-bottom: 5px solid var(--first);
+    }
+
+    /* Styling for split screen */
+    #split-screen-container {
+        display: flex;
+        margin: 5px;
+        border: 5px;
+        width: 100%;
+    }
+
+    #shift-list-container {
+        width: 33%;
+        flex: 2;
         display: flex;
         flex-direction: column;
-
+        align-items: center;
+        justify-content: center;
+        margin: 5px;
+        border: 5px;
     }
-    
+
     #schedule-container {
-        display:flex;
+        display: flex;
         flex-direction: column;
         width: 100%;
-        height:100%;
         min-height: 80px;
-        max-height: 10000px;
-        position:relative;
-        flex:4;
+        position: relative;
+        flex: 4;
         margin-right: 10px;
-        border-left: 2px solid var(--text2); 
-        margin-top: 0px;
-        border-top: 0;
+        border-left: 2px solid var(--text2);
         padding-top: 0;
     }
+
     #schedule-day {
-        display:flex;
+        display: flex;
         flex-direction: row;
-        height:12.5%;
+        height: 12.5%;
         border-bottom: 2px solid var(--text2);
         align-items: center;
         justify-content: space-between;
-        height:100%;
-        min-height:60px;
-        max-height: 800px;
-
+        height: 100%;
+        min-height: 60px;
     }
-  
+
+    /* General styling for the scheduler */
     #scheduler {
         color: var(--text1);
-        display:flex;
+        display: flex;
         flex-direction: column;
         justify-content: flex-end;
-        align-items: initial; 
-        width:100%;
+        align-items: initial;
+        width: 100%;
         margin: 0;
         padding: 0;
     }
 
-    #filters {
-        display: flex;
-        flex-direction: row;
-        justify-content: center; /* Space between logo, nav, and button */
-        align-items: left; /* Center items vertically */
-        padding: 15px 20px; /* Padding around the header */
-        background-color: #ffffff; /* Background color */
-        color: car(--first); /* Text color */
-        border-bottom: 2px solid black;
-        margin: 4px;
-        
-    }
-    #filter-options{
-        width: 30%;
-        margin:5px;
-        margin-left: 0;
-        height: 50px;
-    }
+    /* Navbar and other containers */
     #nav-items {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-        width:150px;
+        width: 150px;
     }
-
 </style>
