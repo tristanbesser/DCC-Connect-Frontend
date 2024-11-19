@@ -12,7 +12,7 @@ const formData = ref({
 const errorMessage = ref("")
 
 async function loginProcess() {
-  const apiurl = "https://localhost:32776/user/login"
+  const apiurl = "https://api.dccconnect/user/login"
 
   const data = {
         email: formData._rawValue.email, 

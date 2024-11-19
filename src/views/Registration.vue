@@ -22,7 +22,7 @@ async function registrationProcess() {
         employeerole: formData._rawValue.employeerole, 
     }
     
-    const apiurl = "https://localhost:32772/user/register"
+    const apiurl = "https://api.dccconnect.com/user/register"
 
     try {
         const response = await axios.post(apiurl, data, {
