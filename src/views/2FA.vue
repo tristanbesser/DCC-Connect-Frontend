@@ -48,7 +48,7 @@ async function verifyCredential() {
       </div>
       <form @submit.prevent="verifyCredential">
         <div id="credential">
-          <label id="cred">Credential</label>
+          <label id="cred">Verification Code</label>
           <input v-model="credential" type="text" placeholder="Enter code" />
         </div>
         <div id="button">
