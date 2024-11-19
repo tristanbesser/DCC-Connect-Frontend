@@ -8,8 +8,6 @@ import RoundedBox from '../components/LoginFrame.vue';
 import axios from 'axios';
 
 
-
-
 const router = useRouter();
 
 defineOptions({
@@ -23,7 +21,7 @@ defineOptions({
     <div id="holder">
         <RoundedBox>
             <div id="heading">
-                <h1>Account Information</h1>
+              <h1>Account Information</h1>
             </div>
             <p>Name: </p>
             <p>Email:</p>
@@ -31,7 +29,6 @@ defineOptions({
             <div id="signout">
                 <button id="sign-out">Sign Out</button>
             </div>
-            
         </RoundedBox>
     </div>
 

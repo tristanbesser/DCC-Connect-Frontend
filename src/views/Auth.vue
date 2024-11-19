@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import RoundedBox from '../components/LoginFrame.vue'
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { ref } from 'vue';
 import axios from 'axios';
 
@@ -9,26 +9,42 @@ const formData = ref({
     credential: ""
 })
 
+const errorMessage = ref("")
+
 async function loginProcess() {
-  const apiurl = "https://localhost:32772/user/login"
+  const apiurl = "https://api.dccconnect.com/user/login"
 
   const data = {
-        email: formData._rawValue.email, 
-        credential: formData._rawValue.credential
+        email: formData.value.email, 
+        credential: formData.value.credential
     }
 
     try {
         const response = await axios.post(apiurl, data, {
             headers: {
                 "Content-Type": "application/json"
+                
             },
             withCredentials: true
         })
+        if (response.status === 200) { // Assuming 200 indicates successful login
+          console.log('Response:', response.data); // Debugging log
+
+          router.push({
+            path: './2FA',
+            query: { email: formData.value.email }
+          });
+          
+        } else {
+            errorMessage.value = response.data.message || "Login failed. Please try again.";
+          }
     }
     catch(err) {
-        console.log(err)
+      errorMessage.value = err.response?.data?.message || "Login failed. Please try again.";
     }
 }
+
+
 
 
 const router = useRouter();
@@ -45,6 +61,10 @@ const goToSchedule = () => {
   router.push('./scheduler')
 };
 
+const goTo2FA = () => {
+  router.push('./TwoFA')
+};
+
 </script>
 
 <template>
@@ -54,7 +74,7 @@ const goToSchedule = () => {
           <h1>DCC Connect</h1>
           <h2>Welcome to DCC Connect, a simplified scheduling platform for DCC staff.</h2>
         </div>
-        <form @submit.prevent="loginProcess" action="/account-recovery">
+        <form @submit.prevent="loginProcess">
           <div id = "email">
             <label>Email</label>
               <input v-model="formData.email" type="text" name = "email" placeholder="you@example.com">
@@ -65,6 +85,9 @@ const goToSchedule = () => {
           </div>         
           <div>
             <button id = "sign-in">Sign In</button>
+          </div>
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
           </div>
         </form>
         <div id = "forgot-pass">
@@ -207,4 +230,11 @@ const goToSchedule = () => {
     background: white;
     border-radius: 15px;
   }
+
+  .error-message {
+  color: red;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 10px;
+  text-align: center;
+}
 </style>

@@ -15,14 +15,14 @@ const formData = ref({
 async function registrationProcess() {
 
     const data = {
-        firstname: formData._rawValue.firstname,
-        lastname: formData._rawValue.lastname,
-        email: formData._rawValue.email,
-        phonenumber: formData._rawValue.phonenumber,
-        employeerole: formData._rawValue.employeerole, 
+        firstname: formData.value.firstname,
+        lastname: formData.value.lastname,
+        email: formData.value.email,
+        phonenumber: formData.value.phonenumber,
+        employeerole: formData.value.employeerole, 
     }
     
-    const apiurl = "https://localhost:32772/user/register"
+    const apiurl = "https://api.dccconnect.com/user/register"
 
     try {
         const response = await axios.post(apiurl, data, {
@@ -140,7 +140,7 @@ const goToRegistration = () => {
   }
 
   #holder {
-    height: 100%;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
