@@ -2,6 +2,11 @@
 import { NavigationFailureType } from 'vue-router';
 import RoundedBox from '../components/LoginFrame.vue'
 import Navbar from '@/components/Navbar.vue';
+
+defineOptions({
+    name: "ChangePassword"
+});
+
 </script>
 
 <template>

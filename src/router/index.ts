@@ -10,7 +10,7 @@ import TimeOff from '../views/TimeOff.vue';
 import Request from '../views/Request.vue';
 import Info from '../views/Info.vue';
 import Registration from '../views/Registration.vue';
-
+import TwoFA from '../views/2FA.vue';
 import CreateShifts from '../views/CreateShifts.vue';
 
 
@@ -74,6 +74,11 @@ const routes = [
     path: '/create-shifts',
     name: 'CreateShifts',
     component: CreateShifts,
+  },
+  {
+    path: '/2fa',
+    name: '2FA',
+    component: TwoFA
   }
   
 ];
