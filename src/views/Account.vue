@@ -1,6 +1,5 @@
 <script setup lang="ts">
 
-import { faAlignJustify } from '@fortawesome/free-solid-svg-icons/faAlignJustify';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';

@@ -362,6 +362,7 @@ function getListStyle(shift) {
         width: 100%;
         margin: 0;
         padding: 0;
+        font-family: "Poppins";
     }
 
     /* Navbar and other containers */
@@ -370,5 +371,9 @@ function getListStyle(shift) {
         flex-direction: row;
         justify-content: space-between;
         width: 150px;
+    }
+
+    p {
+        font-family: "Poppins";
     }
 </style>

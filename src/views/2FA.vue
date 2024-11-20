@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import RoundedBox from '../components/LoginFrame.vue';
-import axios from 'axios';
+import axios from '../config/axios.js';
 
 const route = useRoute();
 const router = useRouter();
@@ -12,7 +12,6 @@ const credential = ref("");
 const errorMessage = ref("");
 
 async function verifyCredential() {
-  const apiurl = "https://api.dccconnect.com/email/validate2fa";
 
   const data = {
     email: email.value,
@@ -20,7 +19,7 @@ async function verifyCredential() {
   };
 
   try {
-    const response = await axios.post(apiurl, data, {
+    const response = await axios.post('/email/validate2fa', data, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -32,8 +31,15 @@ async function verifyCredential() {
     } else {
       errorMessage.value = response.data.message || "Verification failed. Please try again.";
     }
-  } catch (err) {
-    errorMessage.value = err.response?.data?.message || "Verification failed. Please try again.";
+  } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        errorMessage.value = err.response?.data?.message || "Verification failed. Please try again.";
+      } else if (err instanceof Error) {
+          errorMessage.value = err.message;
+      } else {
+          errorMessage.value = "An unexpected error occurred. Please try again.";
+      }
+    // errorMessage.value = err.response?.data?.message || "Verification failed. Please try again.";
   }
 }
 </script>

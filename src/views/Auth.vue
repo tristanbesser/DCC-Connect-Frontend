@@ -2,7 +2,7 @@
 import RoundedBox from '../components/LoginFrame.vue'
 import { useRouter, useRoute } from 'vue-router';
 import { ref } from 'vue';
-import axios from 'axios';
+import axios from '../config/axios.js';
 
 const formData = ref({
     email: "",
@@ -12,7 +12,6 @@ const formData = ref({
 const errorMessage = ref("")
 
 async function loginProcess() {
-  const apiurl = "https://api.dccconnect.com/user/login"
 
   const data = {
         email: formData.value.email, 
@@ -20,7 +19,7 @@ async function loginProcess() {
     }
 
     try {
-        const response = await axios.post(apiurl, data, {
+        const response = await axios.post('/user/login', data, {
             headers: {
                 "Content-Type": "application/json"
                 

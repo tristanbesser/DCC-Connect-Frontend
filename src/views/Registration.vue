@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import RoundedBox from '../components/LoginFrame.vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
+import axios from '../config/axios.js';
 import { ref } from 'vue';
 
 const formData = ref({
@@ -21,11 +21,10 @@ async function registrationProcess() {
         phonenumber: formData.value.phonenumber,
         employeerole: formData.value.employeerole, 
     }
-    
-    const apiurl = "https://api.dccconnect.com/user/register"
+
 
     try {
-        const response = await axios.post(apiurl, data, {
+        const response = await axios.post('/user/register', data, {
             headers: {
                 "Content-Type": "application/json"
             },
