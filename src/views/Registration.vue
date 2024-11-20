@@ -5,9 +5,9 @@ import axios from 'axios';
 import { ref } from 'vue';
 
 const formData = ref({
+    email: "",
     firstname: "",
     lastname: "",
-    email: "",
     phonenumber: "",
     employeerole: ""
 })
@@ -15,9 +15,9 @@ const formData = ref({
 async function registrationProcess() {
 
     const data = {
+        email: formData.value.email,
         firstname: formData.value.firstname,
         lastname: formData.value.lastname,
-        email: formData.value.email,
         phonenumber: formData.value.phonenumber,
         employeerole: formData.value.employeerole, 
     }
