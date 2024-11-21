@@ -6,30 +6,33 @@ import { ref } from 'vue';
 
 const formData = ref({
     email: "",
-    firstname: "",
-    lastname: "",
-    phonenumber: "",
-    employeerole: ""
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+    employeeRole: ""
 })
 
 async function registrationProcess() {
 
     const data = {
         email: formData.value.email,
-        firstname: formData.value.firstname,
-        lastname: formData.value.lastname,
-        phonenumber: formData.value.phonenumber,
-        employeerole: formData.value.employeerole, 
+        firstName: formData.value.firstName,
+        lastName: formData.value.lastName,
+        phoneNumber: formData.value.phoneNumber,
+        employeeRole: formData.value.employeeRole, 
     }
 
-
+    const apiurl = 'https://localhost:32780/user/register'
     try {
-        const response = await axios.post('/user/register', data, {
+        const response = await axios.post(apiurl, data, {
             headers: {
                 "Content-Type": "application/json"
             },
             withCredentials: true
         })
+        if (response.status === 200) { // Assuming 200 indicates successful login
+          console.log('Response:', response.data);
+        }
     }
     catch(err) {
         console.log(err)
@@ -63,11 +66,11 @@ const goToRegistration = () => {
             <form id="userinfo" @submit.prevent="registrationProcess" action="/account-recovery">
                 <div id = "first-name">
                     <label>First Name</label>
-                    <input v-model="formData.firstname" type="text" name = "firstname" placeholder="e.g John">
+                    <input v-model="formData.firstName" type="text" name = "firstName" placeholder="e.g John">
                 </div>
                 <div id = "last-name">
                     <label>Last Name</label>
-                    <input v-model="formData.lastname" type="text" name = "lastname" placeholder="e.g Smith">
+                    <input v-model="formData.lastName" type="text" name = "lastName" placeholder="e.g Smith">
                 </div>  
                 <div id = "Email">
                     <label>Email</label>
@@ -75,11 +78,11 @@ const goToRegistration = () => {
                 </div>   
                 <div id = "phone-number">
                     <label>Phone Number</label>
-                    <input v-model="formData.phonenumber" type="text" name = "phonenumber" placeholder="">
+                    <input v-model="formData.phoneNumber" type="text" name = "phoneNumber" placeholder="">
                 </div>
                 <div id = "employee-role">
                     <label>Employee Role</label>
-                    <select v-model="formData.employeerole" name="roles" id="roles">
+                    <select v-model="formData.employeeRole" name="roles" id="roles">
                         <option value="Employee">Employee</option>
                         <option value="HouseLead">House Lead</option>
                         <option value="HouseManager">House Manager</option>

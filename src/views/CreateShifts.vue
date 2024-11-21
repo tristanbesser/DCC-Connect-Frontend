@@ -1,47 +1,122 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
+import axios from '../config/axios.js';
 
 const router = useRouter();
 
 defineOptions({
-    name: 'create-shift',
+  name: 'create-shift',
 });
 
-// Shift Class
-class Shift {
-    constructor(start_time, day, location, duration) {
-        this.start_time = start_time;
-        this.day = day;
-        this.location = location;
-        this.duration = duration;
-    }
-}
-
 // Form fields for creating a shift
-const startTime = ref('');
-const day = ref('');
-const location = ref('');
-const duration = ref(0);
-const locations = ref(['Location 1', 'Location 2', 'Location 3', 'Show All']);
+const shift = ref({
+  id: {}, // Will store the ObjectId
+  location: "",
+  shiftPeriod: {
+    start: "",
+    end: "",
+  },
+  requiredRole: "",
+  employeeID: {},
+});
 
-const employees = ref(['Johnson Meijers', 'John Smits', 'Goku', 'Chris']); // Temp list
-const defaultEmployee = ref(employees.value[0]);
+const employees = ref([]);
 
-const handleSubmit = () => {
-    const newShift = new Shift(
-        startTime.value,
-        day.value,
-        location.value,
-        parseInt(duration.value, 10)
-    );
+// Utility function to convert an id object to a MongoDB ObjectId string
+const convertIdToObjectId = (id: any): string | null => {
+  if (id && id.timestamp && id.machine && id.increment) {
+    return `${id.timestamp.toString(16)}${id.machine.toString(16)}${id.increment.toString(16)}`;
+  }
+  return null; // Return null if transformation isn't possible
+};
 
-    console.log('Created Shift:', newShift);
+// Fetch employees from the backend
+const getEmployees = async () => {
+  try {
+    const response = await axios.post('/employees/get', {}, {
+      headers: {
+        "Content-Type": "application/json",
+      }
+    });
+    employees.value = response.data; // Assuming the response is an array of employees
+  } catch (error) {
+    console.error("Error fetching employee data:", error);
+  }
+};
 
-    router.push('./scheduler'); // Navigate after creation
+getEmployees();
+
+// Watcher to update role and id when employeeID changes
+const setRequiredRole = () => {
+  const employee = employees.value.find(emp => emp.id.timestamp === shift.value.employeeID);
+
+  if (employee) {
+    // Log to confirm employee is found
+    console.log("Matched Employee:", employee);
+
+    // Transform `id` to ObjectId and assign requiredRole
+    shift.value.employeeID = employee.id.timestamp;
+    shift.value.requiredRole = employee.employeeRole || employee.role || ""; // Fallback if key differs
+
+    // Log the assigned role
+    console.log("Assigned Role:", shift.value.requiredRole);
+  } else {
+    console.error("No matching employee found for ID:", shift.value.employeeID);
+  }
+};
+
+
+watch(() => shift.value.employeeID, setRequiredRole, { immediate: true });
+
+// Submit the shift details to the backend
+const submitShift = async () => {
+  const startDateTime = new Date(shift.value.shiftPeriod.start).toISOString();
+  const endDateTime = new Date(shift.value.shiftPeriod.end).toISOString();
+
+  // Transform employeeID
+  const transformedEmployeeID = convertIdToObjectId(shift.value.employeeID);
+  if (!transformedEmployeeID) {
+    console.error("Invalid employeeID:", shift.value.employeeID);
+    return; // Stop execution if the employeeID transformation fails
+  }
+
+  // Transform id if required
+  const transformedId = convertIdToObjectId(shift.value.id);
+
+  // Construct the request body
+  const requestBody = {
+    id: transformedId || {}, // Use the transformed ID or an empty object
+    location: shift.value.location,
+    employeeID: transformedEmployeeID, // Use the transformed employeeID
+    requiredRole: shift.value.requiredRole,
+    shiftPeriod: {
+      start: startDateTime,
+      end: endDateTime,
+    },
+  };
+
+  console.log("Request Body:", JSON.stringify(requestBody, null, 2));
+
+  const apiurl = "https://localhost:32782/shifts/create";
+
+  try {
+    const response = await axios.put(apiurl, requestBody, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    console.log("Shift created successfully:", response.data);
+  } catch (error) {
+    console.error("Error creating shift:", error);
+    if (error.response) {
+      console.error("Response:", error.response.data);
+    }
+  }
 };
 </script>
+
 
 
 <template>
@@ -51,50 +126,50 @@ const handleSubmit = () => {
         <h1 id="page-title">Create a Shift</h1>
 
         <div id="form-container">
-
             <div class="form-group">
-                <label for="endDate">Date:</label>
-                <input type="date" id="endDate" v-model="endDate" />
+                <label for="startTime">Start Time:</label>
+                <input type="datetime-local" id="startTime" v-model="shift.shiftPeriod.start" />
             </div>
 
             <div class="form-group">
-                <label for="startTime">Time:</label>
-                <input type="time" id="startTime" v-model="startTime" />
+                <label for="endTime">End Time:</label>
+                <input type="datetime-local" id="endTime" v-model="shift.shiftPeriod.end" />
             </div>
-
-            
 
             <div class="form-group">
                 <label for="location">Location:</label>
-                <select id="location" v-model="location">
-                    <option v-for="loc in locations" :key="loc" :value="loc">
-                        {{ loc }}
-                    </option>
+                <select id="location" v-model="shift.location" required>
+                    <option value="Woodside">Woodside</option>
+                    <option value="419 Indiana">419 Indiana</option>
+                    <option value="Indiana">Indiana</option>
+                    <option value="Ridge">Ridge</option>
+                    <option value="State Street">State Street</option>
+                    <option value="Dakota">Dakota</option>
+                    <option value="Lunn">Lunn</option>
+                    <option value="King">King</option>
+                    <option value="Bond">Bond</option>
+                    <option value="Greenwood">Greenwood</option>
+                    <option value="French">French</option>
+                    <option value="Morefield">Morefield</option>
+                    <option value="Shady">Shady</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="duration">Duration (hours):</label>
-                <input
-                    type="number"
-                    id="duration"
-                    v-model="duration"
-                    placeholder="Enter duration in hours"
-                    min="1"
-                />
-            </div>
-
-            <div class="form-group">
-                <label for="employee">Employee:</label>
-                <select id="employee" v-model="defaultEmployee">
-                    <option v-for="employee in employees" :key="employee" :value="employee">
-                        {{ employee }}
-                    </option>
-                </select>
+                <div>
+                    <label for="employee">Employee:</label>
+                        <select v-model="shift.employeeID" id="employee" required>
+                            <option value="" disabled>Select Employee</option>
+                    <!-- Loop through employees and bind employee ID -->
+                            <option v-for="employee in employees" :key="employee.id.timestamp" :value="employee.id.timestamp">
+                                {{ employee.firstName }} {{ employee.lastName }}
+                            </option>
+                        </select>
+                </div>
             </div>
 
             <div id="submit-button-container">
-                <button @click="handleSubmit" class="action-button">Submit</button>
+                <button @click="submitShift" class="action-button">Submit</button>
             </div>
         </div>
     </div>

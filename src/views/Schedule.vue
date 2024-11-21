@@ -180,35 +180,31 @@ function getListStyle(shift) {
                 
             </div>
             <div id="schedule-container">
-                <div v-for="(shift, index) in shifts" :key="index" :style="getShiftStyle(shift)">
-                    {{shift.location}}: {{ shift.start_time + 7}} - {{ shift.start_time + shift.duration + 7}}
-                </div>
-                <div id="schedule-day">
-                    <div> Day </div>
-                    <div> 7 AM </div>
-                    <div> 8 AM </div>
-                    <div> 9 AM </div>
-                    <div> 10 AM </div>
-                    <div> 11 AM </div>
-                    <div> 12 PM </div>
-                    <div> 1 PM</div>
-                    <div> 2 PM</div>
-                    <div> 3 PM</div>
-                    <div> 4 PM</div>
-                    <div> 5 PM</div>
-                    <div> 6 PM</div>
-                    <div> 7 PM</div>
-                    <div> 8 PM</div>
-                    <div> 9 PM</div>
-                    <div> 10 PM</div>
-                    <div> 11 PM</div>
-                    <div> 12 AM</div>
-                    <div> 1 AM</div>
-                    <div> 2 AM</div>
-                    <div> 3 AM</div>
-                    <div> 4 AM</div>
-                    <div> 5 AM</div>
-                    <div> 6 AM</div>                    
+                <div id="schedule-time">
+                    <div>7 AM </div>
+                    <div>8 AM </div>
+                    <div>9 AM</div>
+                    <div>10 AM</div>
+                    <div>11 AM</div>
+                    <div>12 PM</div>
+                    <div>1 PM</div>
+                    <div>2 PM</div>
+                    <div>3 PM</div>
+                    <div>4 PM</div>
+                    <div>5 PM</div>
+                    <div>6 PM</div>
+                    <div>7 PM</div>
+                    <div>8 PM</div>
+                    <div>9 PM</div>
+                    <div>10 PM</div>
+                    <div>11 PM</div>
+                    <div>12 AM</div>
+                    <div>1 AM</div>
+                    <div>2 AM</div>
+                    <div>3 AM</div>
+                    <div>4 AM</div>
+                    <div>5 AM</div>
+                    <div>6 AM</div>                    
                 </div>
                 <div id="schedule-day">Mon</div>
                 <div id="schedule-day">Tue</div>
