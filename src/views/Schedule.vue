@@ -111,8 +111,8 @@ function getListStyle(shift) {
 
 
 <template>
+    <Navbar></Navbar>
     <div id = 'scheduler'>
-        <Navbar></Navbar>
         
         <div style="text-align: center; font-size: 18px; margin-top: 10px">Options</div>
         <div id = 'filters'>
@@ -291,9 +291,9 @@ function getListStyle(shift) {
     }
 
     #Shift-list-scroll {
-        overflow-y: scroll;
+        overflow-y: auto;
         width: 90%;
-        height: 400px;
+        height: 100%;
     }
 
     #Shift-list-title {
