@@ -309,9 +309,9 @@ function getListStyle(shift) {
     /* Styling for split screen */
     #split-screen-container {
         display: flex;
-        margin: 5px;
         border: 5px;
         width: 100%;
+        height: 100%;
     }
 
     #shift-list-container {
@@ -328,23 +328,31 @@ function getListStyle(shift) {
     #schedule-container {
         display: flex;
         flex-direction: column;
-        width: 100%;
+        width: 100vw;
         min-height: 80px;
-        position: relative;
         flex: 4;
         margin-right: 10px;
         border-left: 2px solid var(--text2);
         padding-top: 0;
+        overflow-x: auto;
+    }
+
+    #schedule-time {
+        display: flex;
+        justify-content: space-between;
+        white-space: nowrap;
+        padding-left: 50px;
+        width: 100vw;
     }
 
     #schedule-day {
         display: flex;
         flex-direction: row;
-        height: 12.5%;
         border-bottom: 2px solid var(--text2);
         align-items: center;
         justify-content: space-between;
         height: 100%;
+        width: 100vw;
         min-height: 60px;
     }
 
@@ -353,11 +361,8 @@ function getListStyle(shift) {
         color: var(--text1);
         display: flex;
         flex-direction: column;
-        justify-content: flex-end;
-        align-items: initial;
         width: 100%;
-        margin: 0;
-        padding: 0;
+        height: 100vh;
         font-family: "Poppins";
     }
 
