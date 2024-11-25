@@ -1,118 +1,95 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
 import axios from '../config/axios.js';
 
-const router = useRouter();
-
-defineOptions({
-  name: 'create-shift',
-});
-
-// Form fields for creating a shift
+// Reactive data
+const employees = ref([]); // Array to store employee data
 const shift = ref({
-  id: {}, // Will store the ObjectId
+  id: "",
   location: "",
   shiftPeriod: {
     start: "",
     end: "",
   },
-  requiredRole: "",
-  employeeID: {},
+  requiredRole: "",  // This will hold the role for the shift
 });
 
-const employees = ref([]);
+const apiurl3 = "https://localhost:32773/employees/get"
 
-// Utility function to convert an id object to a MongoDB ObjectId string
-const convertIdToObjectId = (id: any): string | null => {
-  if (id && id.timestamp && id.machine && id.increment) {
-    return `${id.timestamp.toString(16)}${id.machine.toString(16)}${id.increment.toString(16)}`;
-  }
-  return null; // Return null if transformation isn't possible
-};
-
-// Fetch employees from the backend
+// Method to fetch employees
 const getEmployees = async () => {
   try {
-    const response = await axios.post('/employees/get', {}, {
+    const response = await axios.get(apiurl3, {}, {
       headers: {
         "Content-Type": "application/json",
-      }
+      },
     });
-    employees.value = response.data; // Assuming the response is an array of employees
+
+    console.log("Employee data fetched:", response.data);
+    employees.value = response.data; // Assuming the response is an array of employee objects
   } catch (error) {
     console.error("Error fetching employee data:", error);
   }
 };
 
-getEmployees();
+// Call getEmployees when the component is mounted
+onMounted(() => {
+  getEmployees();
+});
 
-// Watcher to update role and id when employeeID changes
-const setRequiredRole = () => {
-  const employee = employees.value.find(emp => emp.id.timestamp === shift.value.employeeID);
-
-  if (employee) {
-    // Log to confirm employee is found
-    console.log("Matched Employee:", employee);
-
-    // Transform `id` to ObjectId and assign requiredRole
-    shift.value.employeeID = employee.id.timestamp;
-    shift.value.requiredRole = employee.employeeRole || employee.role || ""; // Fallback if key differs
-
-    // Log the assigned role
-    console.log("Assigned Role:", shift.value.requiredRole);
-  } else {
-    console.error("No matching employee found for ID:", shift.value.employeeID);
+// Handle employee selection and update the shift object
+const handleEmployeeSelect = (employeeID: string) => {
+  const selectedEmployee = employees.value.find(emp => emp.id.timestamp === employeeID || emp.id === employeeID);
+  if (selectedEmployee) {
+    shift.value.requiredRole = selectedEmployee.role || selectedEmployee.employeeRole || "Unknown"; // Set role based on the employee data
   }
 };
 
+const apiurl = "https://localhost:32773/shifts/create";
+const apiurl2 = "https://localhost:32773/shifts/assign";
 
-watch(() => shift.value.employeeID, setRequiredRole, { immediate: true });
-
-// Submit the shift details to the backend
-const submitShift = async () => {
-  const startDateTime = new Date(shift.value.shiftPeriod.start).toISOString();
-  const endDateTime = new Date(shift.value.shiftPeriod.end).toISOString();
-
-  // Transform employeeID
-  const transformedEmployeeID = convertIdToObjectId(shift.value.employeeID);
-  if (!transformedEmployeeID) {
-    console.error("Invalid employeeID:", shift.value.employeeID);
-    return; // Stop execution if the employeeID transformation fails
-  }
-
-  // Transform id if required
-  const transformedId = convertIdToObjectId(shift.value.id);
-
-  // Construct the request body
-  const requestBody = {
-    id: transformedId || {}, // Use the transformed ID or an empty object
-    location: shift.value.location,
-    employeeID: transformedEmployeeID, // Use the transformed employeeID
-    requiredRole: shift.value.requiredRole,
-    shiftPeriod: {
-      start: startDateTime,
-      end: endDateTime,
-    },
-  };
-
-  console.log("Request Body:", JSON.stringify(requestBody, null, 2));
-
-  const apiurl = "https://localhost:32782/shifts/create";
-
+// Create and assign a shift
+const handleCreateAndAssignShift = async () => {
   try {
-    const response = await axios.put(apiurl, requestBody, {
+    // Step 1: Create the shift
+    const createResponse = await axios.post(apiurl, {
+      location: shift.value.location,
+      shiftPeriod: {
+        start: new Date(shift.value.shiftPeriod.start).toISOString(),
+        end: new Date(shift.value.shiftPeriod.end).toISOString(),
+      },
+      requiredRole: shift.value.requiredRole,  // Include the role in the request
+    }, {
       headers: {
         "Content-Type": "application/json",
       },
     });
-    console.log("Shift created successfully:", response.data);
-  } catch (error) {
-    console.error("Error creating shift:", error);
-    if (error.response) {
-      console.error("Response:", error.response.data);
+
+    console.log("Shift created successfully:", createResponse.data);
+
+    // Extract the created shift ID
+    const createdShiftId = createResponse.data.id; // Adjust key as per your API response
+    if (!createdShiftId) {
+      throw new Error("Shift creation failed: No shift ID returned.");
     }
+
+    // Step 2: Assign the shift to the selected employee
+    const assignResponse = await axios.put(apiurl2, {
+      shiftIDString: createdShiftId,
+      employeeIDString: shift.value.employeeID,
+    }, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Shift assigned successfully:", assignResponse.data);
+
+  } catch (error) {
+    console.error("Error in creating or assigning shift:", error);
+    alert("Failed to create or assign shift. Check the console for details.");
   }
 };
 </script>
@@ -120,60 +97,63 @@ const submitShift = async () => {
 
 
 <template>
-    <Navbar></Navbar>
-    <div id="create-shift-container">
-        
-        <h1 id="page-title">Create a Shift</h1>
+  <Navbar></Navbar>
+  <div id="create-shift-container">
+    <h1 id="page-title">Create a Shift</h1>
 
-        <div id="form-container">
-            <div class="form-group">
-                <label for="startTime">Start Time:</label>
-                <input type="datetime-local" id="startTime" v-model="shift.shiftPeriod.start" />
-            </div>
+    <div id="form-container">
+      <!-- Form for creating a shift -->
+      <div class="form-group">
+        <label for="startTime">Start Time:</label>
+        <input type="datetime-local" id="startTime" v-model="shift.shiftPeriod.start" />
+      </div>
 
-            <div class="form-group">
-                <label for="endTime">End Time:</label>
-                <input type="datetime-local" id="endTime" v-model="shift.shiftPeriod.end" />
-            </div>
+      <div class="form-group">
+        <label for="endTime">End Time:</label>
+        <input type="datetime-local" id="endTime" v-model="shift.shiftPeriod.end" />
+      </div>
 
-            <div class="form-group">
-                <label for="location">Location:</label>
-                <select id="location" v-model="shift.location" required>
-                    <option value="Woodside">Woodside</option>
-                    <option value="419 Indiana">419 Indiana</option>
-                    <option value="Indiana">Indiana</option>
-                    <option value="Ridge">Ridge</option>
-                    <option value="State Street">State Street</option>
-                    <option value="Dakota">Dakota</option>
-                    <option value="Lunn">Lunn</option>
-                    <option value="King">King</option>
-                    <option value="Bond">Bond</option>
-                    <option value="Greenwood">Greenwood</option>
-                    <option value="French">French</option>
-                    <option value="Morefield">Morefield</option>
-                    <option value="Shady">Shady</option>
-                </select>
-            </div>
+      <div class="form-group">
+        <label for="location">Location:</label>
+        <select id="location" v-model="shift.location" required>
+          <option value="Woodside">Woodside</option>
+          <option value="419 Indiana">419 Indiana</option>
+          <option value="Indiana">Indiana</option>
+          <option value="Ridge">Ridge</option>
+          <option value="State Street">State Street</option>
+          <option value="Dakota">Dakota</option>
+          <option value="Lunn">Lunn</option>
+          <option value="King">King</option>
+          <option value="Bond">Bond</option>
+          <option value="Greenwood">Greenwood</option>
+          <option value="French">French</option>
+          <option value="Morefield">Morefield</option>
+          <option value="Shady">Shady</option>
+        </select>
+      </div>
 
-            <div class="form-group">
-                <div>
-                    <label for="employee">Employee:</label>
-                        <select v-model="shift.employeeID" id="employee" required>
-                            <option value="" disabled>Select Employee</option>
-                    <!-- Loop through employees and bind employee ID -->
-                            <option v-for="employee in employees" :key="employee.id.timestamp" :value="employee.id.timestamp">
-                                {{ employee.firstName }} {{ employee.lastName }}
-                            </option>
-                        </select>
-                </div>
-            </div>
+      <div class="form-group">
+        <label for="employee">Employee:</label>
+        <select v-model="shift.employeeID" id="employee" @change="handleEmployeeSelect(shift.employeeID)" required>
+          <option value="" disabled>Select Employee</option>
+          <!-- Ensure you match the employee structure -->
+          <option v-for="employee in employees" 
+                  :key="employee.id.timestamp || employee.id" 
+                  :value="employee.id.timestamp || employee.id">
+            {{ employee.firstName }} {{ employee.lastName }}
+          </option>
+        </select>
+      </div>
 
-            <div id="submit-button-container">
-                <button @click="submitShift" class="action-button">Submit</button>
-            </div>
-        </div>
+      <div id="submit-button-container">
+        <button @click.prevent="handleCreateAndAssignShift" class="action-button">Create and Assign</button>
+      </div>
     </div>
+  </div>
 </template>
+
+
+
 
 <style scoped>
 /* Page container */
