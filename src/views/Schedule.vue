@@ -1,10 +1,8 @@
 <script setup lang="ts">
-
-import { faAlignJustify } from '@fortawesome/free-solid-svg-icons/faAlignJustify';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import axios from '../config/axios.js';
 import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
-
 
 const router = useRouter();
 
@@ -12,102 +10,47 @@ defineOptions({
     name: 'scheduler',
 });
 
-const options = ref(['Location 1', 'Location 2', 'Location 3', 'Show All']);
-const employees = ref(['My shifts', 'John Smits', 'Goku', 'Chris']);// this is a temp list
-const shifts = ref([]);
-const selectedOption = ref('Show All');
-const defaultEmployee = ref('My shifts');
-const colors = ['var(--pop1)', 'var(--pop2)', 'var(--pop3)', 'var(--pop4)', 'var(--pop5)'];
-var colorIndex = 0;
-
-class Shift {
-    constructor(start_time, day, location, duration){
-        this.start_time = start_time;
-        this.day = day;
-        this.location = location;
-        this.duration = duration;
-    }
-}
 const goToCreateShifts = () => {
-    router.push('./create-shifts'); // Change this to the actual route
+    router.push('./create-shifts');
 };
-// Add initial shifts for testing
-shifts.value.push(new Shift(7, 0, 'Location 1', 4));
-shifts.value.push(new Shift(4, 3, 'Location 2', 8));
-shifts.value.push(new Shift(20, 3, 'Location 1', 8));
-shifts.value.push(new Shift(14, 6, 'Location 3', 4));
 
-shifts.value.push(new Shift(14, 1, 'Location 2', 4));
-shifts.value.push(new Shift(20, 2, 'Location 4', 4));
-shifts.value.push(new Shift(12, 0, 'Location 1', 4));
-shifts.value.push(new Shift(1, 4, 'Location 2', 4));
-shifts.value.push(new Shift(0, 5, 'Location 1', 4));
+// Data for storing shifts
+const shifts = ref([]);
+
+// Fetch shifts from the API
+const fetchShifts = async () => {
+  try {
+    const response = await axios.get('https://localhost:32773/shifts/get', {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Shifts fetched successfully:", response.data);
+    shifts.value = response.data.map(shift => ({
+      ...shift,
+      day: new Date(shift.shiftPeriod.start).getDay(), // Calculate the day of the week
+      start_time: new Date(shift.shiftPeriod.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      end_time: new Date(shift.shiftPeriod.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      duration: Math.round((new Date(shift.shiftPeriod.end).getTime() - new Date(shift.shiftPeriod.start).getTime()) / 3600000), // Calculate duration in hours
+      assignedEmployeeName: shift.assignedEmployee 
+        ? `${shift.assignedEmployee.firstName} ${shift.assignedEmployee.lastName}`
+        : "Unassigned",
+    }));
+  } catch (error) {
+    console.error("Error fetching shifts:", error);
+  }
+};
+
+// Fetch shifts when the component is mounted
+onMounted(() => {
+  fetchShifts();
+});
 
 
 
-
-function getShiftStyle(shift) {
-    // Use the selectedOption value and compare it with the shift location
-    if(shift.location === selectedOption.value || selectedOption.value === 'Show All'){
-        colorIndex += 1;
-        
-        let currentColor = colors[colorIndex % 5];
-        if (colorIndex === shifts.value.length) { // Use 'value' for reactivity if 'shifts' is a ref
-            colorIndex = 0;
-        }
-        return {
-            
-            position: 'absolute',
-            top: `${12.5 + 12.5 * shift.day}%`,
-            left: `${4 + 4 * shift.start_time}%`,
-            width: `${4 * shift.duration}%`,
-            height: '12.5%',
-            backgroundColor: currentColor,
-            color: 'var(--text1)',
-            display: 'flex',                // Center content
-            justifyContent: 'center',       // Horizontally center
-            alignItems: 'center',           // Vertically center
-            borderRadius: '10px',           // Rounded corners
-        };
-    }
-    else{
-        return {
-            display:'none',
-        }
-    }
-    return {};
-}
-function getListStyle(shift) {
-    // Use the selectedOption value and compare it with the shift location
-    if(shift.location === selectedOption.value || selectedOption.value === 'Show All'){
-        colorIndex += 1;
-        
-        let currentColor = colors[colorIndex % colors.length];
-        if (colorIndex === shifts.value.length) { // Use 'value' for reactivity if 'shifts' is a ref
-            colorIndex = 0;
-        }
-        return {
-            width: `95%`,
-            height: '60px',
-            backgroundColor: 'var(--background)', // Apply the current color for the background
-            color: 'var(--text1)',         // Text color
-            display: 'flex',               // Center content
-            justifyContent: 'center',      // Horizontally center
-            alignItems: 'center',          // Vertically center
-            borderRadius: '10px',          // Rounded corners
-            margin: '2px',                 // Add spacing
-            borderLeft: `5px solid ${currentColor}`, // Correctly interpolate the variable
-        };
-
-    }
-    else{
-        return {
-            display:'none',
-        }
-    }
-    return {};
-}
 </script>
+
 
 
 <template>
@@ -148,35 +91,22 @@ function getListStyle(shift) {
         <div id="split-screen-container">
             <div id="shift-list-container">
                 <p id="Shift-list-title"> Shifts</p>
-                <div id="Shift-list-scroll">
-                    <div v-for="(shift, index) in shifts" :key="index" :style="getListStyle(shift)">
-                        <div id="shift-list-info">
-                            <div v-if="(shift.day == 0)"> Monday</div>
-                            <div v-if="(shift.day == 1)"> Tuesday</div>
-                            <div v-if="(shift.day == 2)"> Wednesday</div>
-                            <div v-if="(shift.day == 3)"> Thursday </div> <!-- replace this with date when finally link backend -->
-                            <div v-if="(shift.day == 4)"> Friday</div>
-                            <div v-if="(shift.day == 5)"> Saturday</div>
-                            <div v-if="(shift.day == 6)"> Sunday</div>
-                            <div>{{shift.location}}</div> 
-                            <div>{{ shift.start_time }} - {{ shift.start_time + shift.duration }}</div>
-                        </div>
-                        
+                <div id="shift-list-scroll">
+  <div
+    v-for="(shift, index) in shifts"
+    :key="index"
+    class="shift-item"
+    :style="{ borderColor: shift.color }"
+  >
+    <div class="shift-day">{{ shift.day }}</div>
+    <div class="shift-location">{{ shift.location }}</div>
+    <div class="shift-time">{{ shift.start_time }} - {{ shift.end_time }}</div>
+    <button class="btn btn-secondary dropdown-toggle" type="button">
+      Options
+    </button>
+  </div>
+</div>
 
-                        <button
-                            class="btn btn-secondary dropdown-toggle"
-                            type="button"
-                            id="dropdownMenuButton"
-                            data-bs-toggle="dropdown"
-                            aria-expanded="false"
-                        >
-                            
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                            <li><a class="dropdown-item" href="#">Offer Shift</a></li>
-                        </ul>
-                    </div>
-                </div>
                 
             </div>
             <div id="schedule-container">
