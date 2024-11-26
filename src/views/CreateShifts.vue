@@ -16,7 +16,7 @@ const shift = ref({
   requiredRole: "",  // This will hold the role for the shift
 });
 
-const apiurl3 = "https://localhost:32773/employees/get"
+const apiurl3 = "https://localhost:32775/employees/get"
 
 // Method to fetch employees
 const getEmployees = async () => {
@@ -47,8 +47,8 @@ const handleEmployeeSelect = (employeeID: string) => {
   }
 };
 
-const apiurl = "https://localhost:32773/shifts/create";
-const apiurl2 = "https://localhost:32773/shifts/assign";
+const apiurl = "https://localhost:32775/shifts/create";
+const apiurl2 = "https://localhost:32775/shifts/assign";
 
 // Create and assign a shift
 const handleCreateAndAssignShift = async () => {

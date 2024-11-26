@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import axios from '../config/axios.js';
 import { useRouter } from 'vue-router';
-import Navbar from '@/components/Navbar.vue';
+import { format, parseISO } from 'date-fns';
 
 const router = useRouter();
 
@@ -14,29 +14,60 @@ const goToCreateShifts = () => {
     router.push('./create-shifts');
 };
 
-// Data for storing shifts
+// Data for storing shifts and employees
 const shifts = ref([]);
+const employees = ref({}); // Store employee details by ID
+
+// Days of the week for mapping
+const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+// Fetch employee details by employee ID
+const fetchEmployee = async (employeeID: string) => {
+  try {
+    const response = await axios.get(`https://localhost:32775/employees/get/${employeeID}`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data; // Assume the API returns employee details
+  } catch (error) {
+    console.error(`Error fetching employee ${employeeID}:`, error);
+    return null;
+  }
+};
 
 // Fetch shifts from the API
 const fetchShifts = async () => {
   try {
-    const response = await axios.get('https://localhost:32773/shifts/get', {
+    const response = await axios.get('https://localhost:32775/shifts/get', {
       headers: {
         "Content-Type": "application/json",
       },
     });
 
     console.log("Shifts fetched successfully:", response.data);
-    shifts.value = response.data.map(shift => ({
-      ...shift,
-      day: new Date(shift.shiftPeriod.start).getDay(), // Calculate the day of the week
-      start_time: new Date(shift.shiftPeriod.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      end_time: new Date(shift.shiftPeriod.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      duration: Math.round((new Date(shift.shiftPeriod.end).getTime() - new Date(shift.shiftPeriod.start).getTime()) / 3600000), // Calculate duration in hours
-      assignedEmployeeName: shift.assignedEmployee 
-        ? `${shift.assignedEmployee.firstName} ${shift.assignedEmployee.lastName}`
-        : "Unassigned",
+    
+    const updatedShifts = await Promise.all(response.data.map(async (shift) => {
+      const employee = shift.employeeID ? await fetchEmployee(shift.employeeID) : null;
+      const assignedEmployeeName = employee
+        ? `${employee.firstName} ${employee.lastName}`
+        : "Unassigned";
+
+      const startDate = new Date(shift.shiftPeriod.start);
+      const formattedDate = format(startDate, 'MM/dd'); // Format date as 'MM/dd'
+      const dayOfWeek = daysOfWeek[startDate.getDay()]; // Get the day of the week
+
+      return {
+        ...shift,
+        day: `${dayOfWeek}, ${formattedDate}`, // Combine the day of the week and the date
+        start_time: new Date(shift.shiftPeriod.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        end_time: new Date(shift.shiftPeriod.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        duration: Math.round((new Date(shift.shiftPeriod.end).getTime() - new Date(shift.shiftPeriod.start).getTime()) / 3600000),
+        assignedEmployeeName,
+      };
     }));
+    
+    shifts.value = updatedShifts;
   } catch (error) {
     console.error("Error fetching shifts:", error);
   }
@@ -46,10 +77,11 @@ const fetchShifts = async () => {
 onMounted(() => {
   fetchShifts();
 });
-
-
-
 </script>
+
+
+
+
 
 
 
@@ -90,24 +122,34 @@ onMounted(() => {
         </div>
         <div id="split-screen-container">
             <div id="shift-list-container">
-                <p id="Shift-list-title"> Shifts</p>
+                <h1 id="shift-list-title">Shifts</h1>
                 <div id="shift-list-scroll">
-  <div
-    v-for="(shift, index) in shifts"
-    :key="index"
-    class="shift-item"
-    :style="{ borderColor: shift.color }"
-  >
-    <div class="shift-day">{{ shift.day }}</div>
-    <div class="shift-location">{{ shift.location }}</div>
-    <div class="shift-time">{{ shift.start_time }} - {{ shift.end_time }}</div>
-    <button class="btn btn-secondary dropdown-toggle" type="button">
-      Options
-    </button>
-  </div>
-</div>
+                    <div
+                        v-for="(shift, index) in shifts"
+                        :key="index"
+                        class="shift-card"
+                        :style="{ borderColor: shift.color }"
+                    >
+                        <div class="shift-card-header">
+                            <div class="shift-location">{{ shift.location }}</div>
+                            <div class="shift-day">{{ shift.day }}</div> <!-- This will show both day of the week and formatted date -->
+                        </div>
 
-                
+                        <div class="shift-card-body">
+                            <div class="shift-time">{{ shift.start_time }} - {{ shift.end_time }}</div>
+                            <div class="shift-employee">Assigned to: {{ shift.assignedEmployeeName }}</div>
+                        </div>
+
+                        <div class="shift-card-footer">
+                        <button class="btn btn-secondary dropdown-toggle" type="button">
+                            Options
+                        </button>
+                        </div>
+                    </div>
+                </div>
+
+
+
             </div>
             <div id="schedule-container">
                 <div id="schedule-time">
@@ -250,7 +292,6 @@ onMounted(() => {
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
         margin: 5px;
         border: 5px;
     }
@@ -307,4 +348,77 @@ onMounted(() => {
     p {
         font-family: "Poppins";
     }
+
+    #shift-list-scroll {
+        display: flex;
+        flex-direction: column;
+        gap: 15px; /* Add space between cards */
+        padding: 10px;
+        max-height: 80vh; /* Add scrolling if the list gets too long */
+        overflow-y: auto;
+    }
+
+    .shift-card {
+  display: flex;
+  flex-direction: row; /* Arrange items in a row */
+  justify-content: space-between; /* Space out elements */
+  align-items: center; /* Vertically align items */
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Ensure the card stretches to the full width of its container */
+  margin-bottom: 16px; /* Space between cards */
+  gap: 15px;
+}
+
+.shift-card-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.shift-card-body,
+.shift-card-footer {
+  display: flex;
+  flex-direction: column; /* Keep each section vertically aligned */
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.shift-card-header {
+  width: 20%; /* Adjust width of the header section */
+}
+
+.shift-card-body {
+  width: 50%; /* Adjust width of the body section */
+  align-items: center;
+}
+
+.shift-card-footer {
+  display: flex;
+  justify-content: flex-end; /* Align "Options" button to the right */
+  width: 30%; /* Adjust footer section width */
+  align-items: center; /* Vertically center the options button */
+}
+
+.shift-day,
+.shift-location,
+.shift-time,
+.shift-employee {
+  margin-bottom: 8px; /* Uniform margin for inner text */
+}
+
+.shift-card-footer button {
+  padding: 8px 12px;
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.shift-card-footer button:hover {
+  background-color: #e0e0e0;
+}
+
+
+
 </style>
