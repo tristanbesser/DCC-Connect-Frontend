@@ -383,6 +383,7 @@ const filteredShifts = computed(() => {
         padding: 10px;
         max-height: 80vh; /* Add scrolling if the list gets too long */
         overflow-y: auto;
+        align-items: center;
     }
 
     .shift-card {
