@@ -1,22 +1,26 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from '../config/axios.js';
 import { useRouter } from 'vue-router';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 const router = useRouter();
 
 defineOptions({
-    name: 'scheduler',
+  name: 'scheduler',
 });
 
+// Navigation function to create shifts page
 const goToCreateShifts = () => {
-    router.push('./create-shifts');
+  router.push('./create-shifts');
 };
 
-// Data for storing shifts and employees
+// Data for storing shifts, employees, and selected filters
 const shifts = ref([]);
-const employees = ref({}); // Store employee details by ID
+const employees = ref([]); // Will store employee details in an array
+const selectedLocation = ref(''); // For storing selected location from dropdown
+const selectedEmployee = ref(''); // For storing selected employee from dropdown
+const locations = ref(['Ridge', 'Lunn', 'Greenwood', 'Dakota', 'Woodside', 'Indiana', '419 Indiana', 'King']);
 
 // Days of the week for mapping
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -26,7 +30,7 @@ const fetchEmployee = async (employeeID: string) => {
   try {
     const response = await axios.get(`https://localhost:32775/employees/get/${employeeID}`, {
       headers: {
-        "Content-Type": "application/json",
+      "Content-Type": "application/json",
       },
     });
     return response.data; // Assume the API returns employee details
@@ -36,6 +40,7 @@ const fetchEmployee = async (employeeID: string) => {
   }
 };
 
+// Fetch shifts from the API
 // Fetch shifts from the API
 const fetchShifts = async () => {
   try {
@@ -64,19 +69,49 @@ const fetchShifts = async () => {
         end_time: new Date(shift.shiftPeriod.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         duration: Math.round((new Date(shift.shiftPeriod.end).getTime() - new Date(shift.shiftPeriod.start).getTime()) / 3600000),
         assignedEmployeeName,
+        employeeID: shift.employeeID // Keep employeeID for filtering
       };
     }));
-    
+
+    // Use a Set to filter out duplicate employees
+    const uniqueEmployees = updatedShifts.reduce((acc, shift) => {
+      if (!acc.some(emp => emp.id === shift.employeeID)) {
+        acc.push({ id: shift.employeeID, name: shift.assignedEmployeeName });
+      }
+      return acc;
+    }, []);
+
+    employees.value = uniqueEmployees; // Only unique employees
+
     shifts.value = updatedShifts;
   } catch (error) {
     console.error("Error fetching shifts:", error);
   }
 };
 
+
 // Fetch shifts when the component is mounted
 onMounted(() => {
   fetchShifts();
 });
+
+// Computed property to filter shifts by location and employee
+const filteredShifts = computed(() => {
+  let filtered = shifts.value;
+
+  // Filter by location
+  if (selectedLocation.value) {
+    filtered = filtered.filter(shift => shift.location === selectedLocation.value);
+  }
+
+  // Filter by employee
+  if (selectedEmployee.value) {
+    filtered = filtered.filter(shift => shift.employeeID === selectedEmployee.value);
+  }
+
+  return filtered;
+});
+
 </script>
 
 
@@ -85,72 +120,64 @@ onMounted(() => {
 
 
 
+
+
 <template>
-    <Navbar></Navbar>
-    <div id = 'scheduler'>
-        
-        <div style="text-align: center; font-size: 18px; margin-top: 10px">Options</div>
-        <div id = 'filters'>
-            
-                <div id="filter-options">
-                    <select id="options" v-model="selectedOption">
-                        <option v-for="option in options" :key="option" :value="option" id="">
-                            {{ option }}
-                        </option>
-                    </select>
-                </div>
-                <div id="filter-options">
-                    <select id="options" v-model="defaultEmployee">
-                        <option v-for="option in employees" :key="option" :value="option" id="">
-                            {{ option }}
-                        </option>
-                    </select>
-                </div>
-            
-            
-                <div id="filter-options">
-                <button 
-                    class="create-shift-btn" 
-                    @click="goToCreateShifts"
-                >
-                    Create Shifts
-                </button>
-            </div>
-            
-            
+  <Navbar></Navbar>
+  <div id='scheduler'>
+    <div style="text-align: center; font-size: 18px; margin-top: 10px">Options</div>
+    <div id='filters'>
+      <div id="filter-options">
+        <!-- Location Dropdown -->
+        <select id="location" v-model="selectedLocation">
+          <option value="">All Locations</option>
+          <option v-for="(location, index) in locations" :key="index" :value="location">
+            {{ location }}
+          </option>
+        </select>
+      </div>
 
+<!-- Employee Dropdown -->
+<div id="filter-options">
+  <select id="employee" v-model="selectedEmployee">
+    <option value="">All Employees</option>
+    <option v-for="employee in employees" :key="employee.id" :value="employee.id">
+      {{ employee.name }}
+    </option>
+  </select>
+</div>
+
+
+      <!-- Create Shift Button -->
+      <div id="filter-options">
+        <button class="create-shift-btn" @click="goToCreateShifts">
+          Create Shifts
+        </button>
+      </div>
+    </div>
+
+    <div id="split-screen-container">
+      <div id="shift-list-container">
+        <h1 id="shift-list-title">Shifts</h1>
+        <div id="shift-list-scroll">
+          <!-- Display Filtered Shifts -->
+          <div v-for="(shift, index) in filteredShifts" :key="index" class="shift-card" :style="{ borderColor: shift.color }">
+            <div class="shift-card-header">
+              <div class="shift-location">{{ shift.location }}</div>
+              <div class="shift-day">{{ shift.day }}</div>
+            </div>
+
+            <div class="shift-card-body">
+              <div class="shift-time">{{ shift.start_time }} - {{ shift.end_time }}</div>
+              <div class="shift-employee">Assigned to: {{ shift.assignedEmployeeName }}</div>
+            </div>
+
+            <div class="shift-card-footer">
+              <button class="btn btn-secondary dropdown-toggle" type="button">Options</button>
+            </div>
+          </div>
         </div>
-        <div id="split-screen-container">
-            <div id="shift-list-container">
-                <h1 id="shift-list-title">Shifts</h1>
-                <div id="shift-list-scroll">
-                    <div
-                        v-for="(shift, index) in shifts"
-                        :key="index"
-                        class="shift-card"
-                        :style="{ borderColor: shift.color }"
-                    >
-                        <div class="shift-card-header">
-                            <div class="shift-location">{{ shift.location }}</div>
-                            <div class="shift-day">{{ shift.day }}</div> <!-- This will show both day of the week and formatted date -->
-                        </div>
-
-                        <div class="shift-card-body">
-                            <div class="shift-time">{{ shift.start_time }} - {{ shift.end_time }}</div>
-                            <div class="shift-employee">Assigned to: {{ shift.assignedEmployeeName }}</div>
-                        </div>
-
-                        <div class="shift-card-footer">
-                        <button class="btn btn-secondary dropdown-toggle" type="button">
-                            Options
-                        </button>
-                        </div>
-                    </div>
-                </div>
-
-
-
-            </div>
+      </div>
             <div id="schedule-container">
                 <div id="schedule-time">
                     <div>7 AM </div>
