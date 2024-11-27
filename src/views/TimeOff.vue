@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
-
+import axios from '../config/axios.js';
 const router = useRouter();
 
 defineOptions({
@@ -12,6 +12,23 @@ defineOptions({
 const goToRequest = () => {
   router.push('./request');
 };
+const apiurl3 = "https://localhost:32769/"
+
+const request_type = ref(['My time off requests', 'My offered shifts', 'Available shifts']);
+const selectedType = ref('My time off requests');
+const currentDate = new Date();
+const locations=ref([])
+const shifts = ref([]);
+const requests = ref([]);/*Populate this to the result of this request.
+axios.get(apiurl3+"coverage/get",{
+  params:
+  {
+    employeeID:"POPULATE THIS BASED ON ACTIVE"
+  }
+})*/
+
+const availableShifts = ref([]);
+const offers = ref([]);
 
 const takeShift = (offer) => {
   // Find the index of the offer in the array
@@ -19,17 +36,9 @@ const takeShift = (offer) => {
   
   // Remove the offer if it exists
   if (index !== -1) {
-    offers.value.splice(index, 1);
+    availableShifts.value.splice(index, 1);
   }
 };
-const request_type = ref(['My time off requests', 'My offered shifts', 'Available shifts']);
-const selectedType = ref('My time off requests');
-const currentDate = new Date();
-
-const shifts = ref([]);
-const requests = ref([]);
-const offers = ref([]);
-
 class Shift {
     constructor(start_time, day, location, duration){
         this.start_time = start_time;
@@ -63,6 +72,16 @@ offers.value.push(new shiftOffer('self', new Shift(7, 0, 'Location 1', 4)));
 offers.value.push(new shiftOffer('self', new Shift(7, 0, 'Location 1', 4)));
 offers.value.push(new shiftOffer('Josh', new Shift(7, 0, 'Location 1', 4)));
 offers.value.push(new shiftOffer('Angela', new Shift(7, 0, 'Location 1', 4)));
+
+axios.get(apiurl3+"shifts/get",{
+    params:{
+    openShiftsOnly:true
+  }}).then(response=>{
+    console.log(response.data)
+    availableShifts.value=response.data})
+axios.get(apiurl3+"location/get").then(response=>{
+    console.log(response.data)
+    locations.value=response.data.reduce((acc, item) => { const { id, ...rest } = item; acc[id] = rest; return acc; }, {});})
 
 
 function getListStyle(request) {
@@ -129,7 +148,13 @@ function getOtherOfferedStyle(request) {
         };
     }
 }
-
+type Address = { streetAddress: string; 
+  apartmentNumber?: string | null; 
+  city: string; 
+  state: string; 
+  postalCode: string; 
+  country: string; };
+  function formatAddress(address: Address): string { const { streetAddress, apartmentNumber, city, state, postalCode } = address; return `${streetAddress}${apartmentNumber ? ', ' + apartmentNumber : ''}, ${city}, ${state} ${postalCode}`; }
 
 </script>
 
@@ -169,11 +194,10 @@ function getOtherOfferedStyle(request) {
     </div>
 </div>
 <div v-if="selectedType == 'Available shifts'">
-    <div v-for="(request, index) in offers" :key="index" :style="getOtherOfferedStyle(request)">
-        <div>{{ request.shift.start_time }} - {{ request.shift.duration +  request.shift.start_time}}</div>
-        <div>{{ request.shift.location }}</div>
-        <div>{{ request.shift.start_time }}</div>
-        <div>{{ request.owner }}</div>
+    <div v-for="(request, index) in availableShifts" :key="index" :style="getOtherOfferedStyle(request)">
+      <div style="width: 300px;">{{ formatAddress(locations[request.location].streetAddress) }}</div>
+      <div>{{ request.shiftPeriod.start }} </div>
+        <div>{{ request.shiftPeriod.end }}</div>
         <button @click="takeShift(request)">Take Shift</button>
     </div>
 </div>
