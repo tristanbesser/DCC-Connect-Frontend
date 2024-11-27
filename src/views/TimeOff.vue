@@ -19,7 +19,8 @@ const selectedType = ref('My time off requests');
 const currentDate = new Date();
 const locations=ref([])
 const shifts = ref([]);
-const requests = ref([]);/*Populate this to the result of this request.
+const requests = ref([]);
+/*Populate this to the result of this request.
 axios.get(apiurl3+"coverage/get",{
   params:
   {
@@ -32,12 +33,23 @@ const offers = ref([]);
 
 const takeShift = (offer) => {
   // Find the index of the offer in the array
-  const index = offers.value.findIndex(o => o === offer);
-  
-  // Remove the offer if it exists
+  const index = availableShifts.value.findIndex(o => o === offer);
+  console.log(offer.id)
+  axios.post(apiurl3+"/employees/pickup",{
+  openShiftID: offer.id,
+  employeeID: "POPULATE THIS WITH THE ID OF THE WORKING EMPLOYEE"
+}).then(response=>{
   if (index !== -1) {
     availableShifts.value.splice(index, 1);
   }
+  alert("Successfully took shift.")
+}).catch(error=>{
+  console.log(index)
+  console.log(error)
+  alert("Failed to pick up shift.")
+})
+  // Remove the offer if it exists
+  
 };
 class Shift {
     constructor(start_time, day, location, duration){
