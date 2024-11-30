@@ -17,9 +17,13 @@ const apiurl3 = "https://localhost:32769/"
 const request_type = ref(['My time off requests', 'My offered shifts', 'Available shifts']);
 const selectedType = ref('My time off requests');
 const currentDate = new Date();
-const locations=ref([])
-const shifts = ref([]);
-const requests = ref([]);
+const locations = ref(['Ridge', 'Lunn', 'Greenwood', 'Dakota', 'Woodside', 'Indiana', '419 Indiana', 'King']);
+const availableShifts = ref([]);
+
+const shifts = ref<shift[]>([]); // Reactive array for holding shift objects
+const requests = ref<request[]>([]);  // Typing requests as an array of request
+const offers = ref<shiftOffer[]>([]);  // Typing offers as an array of shiftOffer
+
 /*Populate this to the result of this request.
 axios.get(apiurl3+"coverage/get",{
   params:
@@ -28,8 +32,49 @@ axios.get(apiurl3+"coverage/get",{
   }
 })*/
 
-const availableShifts = ref([]);
-const offers = ref([]);
+
+interface shiftPeriod {
+  start: number;
+  end: number;
+}
+interface request{
+  start_date: number;
+  end_date: number;
+  reason: string;
+  owner: string;
+}
+
+interface shiftOffer {
+  owner: string;
+  shift: shift;
+  shiftPeriod: shiftPeriod;
+}
+
+interface shift {
+  employeeID: string;
+  shiftPeriod: shiftPeriod;
+  location: Address;
+  color: string;
+  assignedEmployeeName: string;
+  day: string;
+  start_time: number;
+  end_time: number;
+  start_day: string; //this is a placeholder until proper data is imported!
+  duration: number; //another useless placeholder.
+}
+interface employee {
+  name: string;
+  id: number;
+  lastName: string;
+}
+
+type Address = { streetAddress: string; 
+  apartmentNumber?: string | null; 
+  city: string; 
+  state: string; 
+  postalCode: string; 
+  country: string; };
+  function formatAddress(address: Address): string { const { streetAddress, apartmentNumber, city, state, postalCode } = address; return `${streetAddress}${apartmentNumber ? ', ' + apartmentNumber : ''}, ${city}, ${state} ${postalCode}`; }
 
 
 const takeShift = (offer: any) => {
@@ -38,7 +83,7 @@ const takeShift = (offer: any) => {
   console.log(offer.id)
   axios.post(apiurl3+"/employees/pickup",{
   openShiftID: offer.id,
-  employeeID: "POPULATE THIS WITH THE ID OF THE WORKING EMPLOYEE"
+  employeeID: "POPULATE THIS WITH THE ID OF THE WORKING EMPLOYEE"//lol
 }).then((response: any)=>{
   if (index !== -1) {
     availableShifts.value.splice(index, 1);
@@ -52,52 +97,19 @@ const takeShift = (offer: any) => {
   // Remove the offer if it exists
   
 };
-class Shift {
-    constructor(start_time, day, location, duration){
-        this.start_time = start_time;
-        this.day = day;
-        this.location = location;
-        this.duration = duration;
-    }
-}
-class request {
-    constructor(start_date, end_date, reason){
-        this.start_date = start_date;
-        this.end_date = end_date;
-        this.reason = reason;
-    }
-}
-class shiftOffer {
-    constructor(owner, shift){
-        this.owner = owner;
-        this.shift = shift;
-    }
-}
-
-shifts.value.push(new Shift(7, 0, 'Location 1', 4));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
-
-offers.value.push(new shiftOffer('Jamie', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('self', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('self', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('Josh', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('Angela', new Shift(7, 0, 'Location 1', 4)));
 
 axios.get(apiurl3+"shifts/get",{
     params:{
     openShiftsOnly:true
-  }}).then(response=>{
+  }}).then((response: any)=>{
     console.log(response.data)
     availableShifts.value=response.data})
-axios.get(apiurl3+"location/get").then(response=>{
+axios.get(apiurl3+"location/get").then((response: any)=>{
     console.log(response.data)
-    locations.value=response.data.reduce((acc, item) => { const { id, ...rest } = item; acc[id] = rest; return acc; }, {});})
+    locations.value=response.data.reduce((acc: any, item: any) => { const { id, ...rest } = item; acc[id] = rest; return acc; }, {});})
 
 
-function getListStyle(request) {
+function getListStyle(request: request) {
     const requestStartDate = new Date(request.start_date); // Convert start_date to a Date object
     if (requestStartDate < currentDate) {
         return {
@@ -106,7 +118,6 @@ function getListStyle(request) {
             backgroundColor: 'var(--background)', // Apply the current color for the background
             color: 'var(--text1)',         // Text color
             display: 'flex',               // Center content
-            justifyContent: 'center',      // Horizontally center
             alignItems: 'center',          // Vertically center
             borderRadius: '10px',          // Rounded corners
             margin: '2px',                 // Add spacing
@@ -119,8 +130,8 @@ function getListStyle(request) {
         };
     }
 }
-function getOfferStyle(request) {
-    if (request.owner == 'self') {
+function getOfferStyle(shiftOffer: shiftOffer) {
+    if (shiftOffer.owner == 'self') {
         return {
             width: `95%`,
             minHeight: '60px',
@@ -139,15 +150,14 @@ function getOfferStyle(request) {
         };
     }
 }
-function getOtherOfferedStyle(request) {
-    if (request.owner != 'self') {
+function getOtherOfferedStyle(shiftOffer: shiftOffer) {
+    if (shiftOffer.owner != 'self') {
         return {
             width: `95%`,
             minHeight: '60px',
             backgroundColor: 'var(--background)', // Apply the current color for the background
             color: 'var(--text1)',         // Text color
             display: 'flex',               // Center content
-            justifyContent: 'center',      // Horizontally center
             alignItems: 'center',          // Vertically center
             borderRadius: '10px',          // Rounded corners
             margin: '2px',                 // Add spacing
@@ -160,13 +170,6 @@ function getOtherOfferedStyle(request) {
         };
     }
 }
-type Address = { streetAddress: string; 
-  apartmentNumber?: string | null; 
-  city: string; 
-  state: string; 
-  postalCode: string; 
-  country: string; };
-  function formatAddress(address: Address): string { const { streetAddress, apartmentNumber, city, state, postalCode } = address; return `${streetAddress}${apartmentNumber ? ', ' + apartmentNumber : ''}, ${city}, ${state} ${postalCode}`; }
 
 </script>
 
@@ -198,19 +201,21 @@ type Address = { streetAddress: string;
     </div>
 </div>
 <div v-if="selectedType == 'My offered shifts'">
-    <div v-for="(request, index) in offers" :key="index" :style="getOfferStyle(request)">
-        <div>{{ request.shift.start_time }} - {{ request.shift.duration +  request.shift.start_time}}</div>
-        <div>{{ request.shift.location }}</div>
-        <div>{{ request.shift.start_time }}</div>
-        <div>{{ request.owner }}</div>
+    <div v-for="(shiftOffer, index) in offers" :key="index" :style="getOfferStyle(shiftOffer)">
+        <div>{{ shiftOffer.shift.start_time }} - {{ shiftOffer.shift.duration +  shiftOffer.shift.start_time}}</div>
+        <div>{{ shiftOffer.shift.location }}</div>
+        <div>{{ shiftOffer.shift.start_time }}</div>
+        <div>{{ shiftOffer.owner }}</div>
     </div>
 </div>
 <div v-if="selectedType == 'Available shifts'">
-    <div v-for="(request, index) in availableShifts" :key="index" :style="getOtherOfferedStyle(request)">
-      <div style="width: 300px;">{{ formatAddress(locations[request.location].streetAddress) }}</div>
-      <div>{{ request.shiftPeriod.start }} </div>
-        <div>{{ request.shiftPeriod.end }}</div>
-        <button @click="takeShift(request)">Take Shift</button>
+    <div v-for="(shiftOffer, index) in offers" :key="index" :style="getOtherOfferedStyle(shiftOffer)">
+      <div style="width: 300px;"></div>
+      <!--{{ formatAddress(locations[shiftOffer.shift.location].streetAddress) }}</div> -->
+      <div>{{ shiftOffer.shift.location }}</div>
+      <div>{{ shiftOffer.shiftPeriod.start }} </div>
+      <div>{{ shiftOffer.shiftPeriod.end }}</div>
+      <button @click="takeShift(shiftOffer)">Take Shift</button>
     </div>
 </div>
 
