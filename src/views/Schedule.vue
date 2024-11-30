@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, reactive } from 'vue';
 import axios from '../config/axios.js';
 import { useRouter } from 'vue-router';
 import { format } from 'date-fns';
+
 
 const router = useRouter();
 
@@ -16,8 +17,8 @@ const goToCreateShifts = () => {
 };
 
 // Data for storing shifts, employees, and selected filters
-const shifts = ref([]);
-const employees = ref([]); // Will store employee details in an array
+const shifts = ref<shift[]>([]); // Reactive array for holding shift objects
+const employees = ref<employee[]>([]); // Will store employee details in an array
 const selectedLocation = ref(''); // For storing selected location from dropdown
 const selectedEmployee = ref(''); // For storing selected employee from dropdown
 const locations = ref(['Ridge', 'Lunn', 'Greenwood', 'Dakota', 'Woodside', 'Indiana', '419 Indiana', 'King']);
@@ -39,7 +40,26 @@ const fetchEmployee = async (employeeID: string) => {
     return null;
   }
 };
+interface shiftPeriod {
+  start: number;
+  end: number;
+}
 
+interface shift {
+  employeeID: string;
+  shiftPeriod: shiftPeriod;
+  location: string;
+  color: string;
+  assignedEmployeeName: string;
+  day: string;
+  start_time: number;
+  end_time: number;
+}
+interface employee {
+  name: string;
+  id: number;
+  lastName: string;
+}
 // Fetch shifts from the API
 // Fetch shifts from the API
 const fetchShifts = async () => {
@@ -52,7 +72,7 @@ const fetchShifts = async () => {
 
     console.log("Shifts fetched successfully:", response.data);
     
-    const updatedShifts = await Promise.all(response.data.map(async (shift) => {
+    const updatedShifts = await Promise.all(response.data.map(async (shift: shift) => {
       const employee = shift.employeeID ? await fetchEmployee(shift.employeeID) : null;
       const assignedEmployeeName = employee
         ? `${employee.firstName} ${employee.lastName}`
@@ -75,7 +95,7 @@ const fetchShifts = async () => {
 
     // Use a Set to filter out duplicate employees
     const uniqueEmployees = updatedShifts.reduce((acc, shift) => {
-      if (!acc.some(emp => emp.id === shift.employeeID)) {
+      if (!acc.some((emp: employee) => emp.id === shift.employeeID)) {
         acc.push({ id: shift.employeeID, name: shift.assignedEmployeeName });
       }
       return acc;

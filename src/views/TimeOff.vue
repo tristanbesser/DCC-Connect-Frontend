@@ -31,19 +31,20 @@ axios.get(apiurl3+"coverage/get",{
 const availableShifts = ref([]);
 const offers = ref([]);
 
-const takeShift = (offer) => {
+
+const takeShift = (offer: any) => {
   // Find the index of the offer in the array
   const index = availableShifts.value.findIndex(o => o === offer);
   console.log(offer.id)
   axios.post(apiurl3+"/employees/pickup",{
   openShiftID: offer.id,
   employeeID: "POPULATE THIS WITH THE ID OF THE WORKING EMPLOYEE"
-}).then(response=>{
+}).then((response: any)=>{
   if (index !== -1) {
     availableShifts.value.splice(index, 1);
   }
   alert("Successfully took shift.")
-}).catch(error=>{
+}).catch((error: any)=>{
   console.log(index)
   console.log(error)
   alert("Failed to pick up shift.")
@@ -126,7 +127,6 @@ function getOfferStyle(request) {
             backgroundColor: 'var(--background)', // Apply the current color for the background
             color: 'var(--text1)',         // Text color
             display: 'flex',               // Center content
-            justifyContent: 'center',      // Horizontally center
             alignItems: 'center',          // Vertically center
             borderRadius: '10px',          // Rounded corners
             margin: '2px',                 // Add spacing

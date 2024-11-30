@@ -19,7 +19,7 @@ async function loginProcess() {
     }
 
     try {
-        const response = await axios.post('https://localhost:32775/user/login', data, {
+        const response = await axios.post('/user/login', data, {
             headers: {
                 "Content-Type": "application/json"
                 
@@ -39,8 +39,10 @@ async function loginProcess() {
           }
     }
     catch(err) {
-      errorMessage.value = err.response?.data?.message || "Login failed. Please try again.";
+      const error = err as any;
+      errorMessage.value = error.response?.data?.message || "Login failed. Please try again.";
     }
+
 }
 
 
