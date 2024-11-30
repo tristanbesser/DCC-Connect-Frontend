@@ -31,7 +31,7 @@ async function verifyCredential() {
     } else {
       errorMessage.value = response.data.message || "Verification failed. Please try again.";
     }
-  } catch (err: unknown) {
+  } catch (err: any) {
       if (axios.isAxiosError(err)) {
         errorMessage.value = err.response?.data?.message || "Verification failed. Please try again.";
       } else if (err instanceof Error) {
