@@ -7,6 +7,10 @@ import axios from 'axios';
 
 const router = useRouter();
 
+const gotoChangePassword = () => {
+  router.push('./change-password')
+};
+
 // Reactive data to store employee information
 const employee = ref({
   firstName: '',
@@ -48,7 +52,7 @@ onMounted(() => {
 const signOut = () => {
   // Handle sign out logic, e.g., clearing tokens and redirecting to login page
   localStorage.removeItem('authToken'); // Assuming you're using localStorage for authentication token
-  router.push('/login'); // Redirect to the login page
+  router.push('/'); // Redirect to the login page
 };
 </script>
 
@@ -62,7 +66,8 @@ const signOut = () => {
       <p>Name: {{ employee.firstName }} {{ employee.lastName }}</p>
       <p>Email: {{ employee.email }}</p>
       <p>Role: {{ employee.role }}</p>
-      <div id="signout">
+      <div id="signoutnchangepassword">
+        <button id="change-password" @click="gotoChangePassword">Change Password</button>
         <button id="sign-out" @click="signOut">Sign Out</button>
       </div>
     </RoundedBox>
@@ -75,9 +80,10 @@ const signOut = () => {
     justify-content: center;
   }
 
-  #signout {
+  #signoutnchangepassword {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 20px;
   }
 
   #sign-out {
@@ -99,6 +105,27 @@ const signOut = () => {
 
   #sign-out:hover {
     background-color: #c2352b;
+  }
+
+  #change-password {
+    background-color: #1F4691;
+    border: none;
+    justify-content: center;
+    align-items: center;
+    width: 60%;
+    border-radius: 15px;
+    color: #f0f0f0;
+    padding: 10px 50px;
+    margin-top: 14px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-family: 'Poppins';
+    cursor: pointer;
+  }
+
+  #change-password:hover {
+    background-color: #17346d;
   }
 
   #holder {

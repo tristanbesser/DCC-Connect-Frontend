@@ -259,22 +259,25 @@ const filteredShifts = computed(() => {
 
 
 <style scoped>
-    .create-shift-btn {
-        background-color: var(--second); /* Customize the background */
-        color: var(--text1); /* Text color */
-        border: none;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 5px;
-        cursor: pointer;
-        width: 100%; /* Ensures full width */
-        text-align: center;
-    }
+  .create-shift-btn {
+    background-color: #1F4691;
+    border: none;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    border-radius: 15px;
+    color: #f0f0f0;
+    padding: 10px 50px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-family: 'Poppins';
+    cursor: pointer;
+  }
 
-    .create-shift-btn:hover {
-        background-color: var(--first); /* Change color on hover */
-        color: var(--third);
-    }
+  .create-shift-btn:hover {
+    background-color: #17346d;
+  }
 
     /* Styling for filter options */
     #filters {

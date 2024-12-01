@@ -50,7 +50,7 @@ const router = useRouter();
 
 const gotoAccountRecovery = () => {
   router.push('./account-recovery')
-  };
+};
     
     defineOptions({
         name: 'Auth',
