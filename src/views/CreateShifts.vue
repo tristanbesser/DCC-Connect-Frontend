@@ -5,7 +5,7 @@ import Navbar from '@/components/Navbar.vue';
 import axios from '../config/axios.js';
 
 // Reactive data
-const employees = ref([]); // Array to store employee data
+const employees = ref<employee[]>([]); // Will store employee details in an array
 const shift = ref({
   id: "",
   location: "",
@@ -14,7 +14,32 @@ const shift = ref({
     end: "",
   },
   requiredRole: "",  // This will hold the role for the shift
+  employeeID: "",
+  
 });
+interface employee {
+  name: string;
+  id: id;
+  lastName: string;
+  role: string;
+  employeeRole: string;
+  firstName: string;
+}
+
+interface id{
+  timestamp: string;
+  ID: string;
+}
+// interface shift {
+//   id: string;
+//   location: string;
+//   requiredRold: string;
+//   shiftPeriod: shiftPeriod;
+// }
+// interface shiftPeriod {
+//   start: string;
+//   end: string;
+// }
 
 const apiurl3 = "https://localhost:32775/employees/get"
 
@@ -41,7 +66,7 @@ onMounted(() => {
 
 // Handle employee selection and update the shift object
 const handleEmployeeSelect = (employeeID: string) => {
-  const selectedEmployee = employees.value.find(emp => emp.id.timestamp === employeeID || emp.id === employeeID);
+  const selectedEmployee = employees.value.find(employee => employee.id.timestamp === employeeID || employee.id.ID === employeeID);
   if (selectedEmployee) {
     shift.value.requiredRole = selectedEmployee.role || selectedEmployee.employeeRole || "Unknown"; // Set role based on the employee data
   }
@@ -138,7 +163,7 @@ const handleCreateAndAssignShift = async () => {
           <option value="" disabled>Select Employee</option>
           <!-- Ensure you match the employee structure -->
           <option v-for="employee in employees" 
-                  :key="employee.id.timestamp || employee.id" 
+                  :key="employee.id.ID" 
                   :value="employee.id.timestamp || employee.id">
             {{ employee.firstName }} {{ employee.lastName }}
           </option>
