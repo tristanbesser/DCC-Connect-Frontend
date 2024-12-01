@@ -1,44 +1,80 @@
 <script setup lang="ts">
-
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
 import RoundedBox from '../components/LoginFrame.vue';
 import axios from 'axios';
 
-
 const router = useRouter();
 
-defineOptions({
-    name: 'account',
+// Reactive data to store employee information
+const employee = ref({
+  firstName: '',
+  lastName: '',
+  email: '',
+  role: '',
 });
 
+// API URL to fetch employee data
+const apiurl = "https://localhost:32774/user/signedin";
+
+// Method to fetch employee data
+const getEmployeeData = async () => {
+  try {
+    const response = await axios.get(apiurl, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true
+    });
+
+    // Assuming the response contains the employee data
+    const employeeData = response.data;
+    employee.value.firstName = employeeData.firstName;
+    employee.value.lastName = employeeData.lastName;
+    employee.value.email = employeeData.email;
+    employee.value.role = employeeData.employeeRole;
+  } catch (error) {
+    console.error("Error fetching employee data:", error);
+  }
+};
+
+// Fetch employee data when the component is mounted
+onMounted(() => {
+  getEmployeeData();
+});
+
+// Sign out function
+const signOut = () => {
+  // Handle sign out logic, e.g., clearing tokens and redirecting to login page
+  localStorage.removeItem('authToken'); // Assuming you're using localStorage for authentication token
+  router.push('/login'); // Redirect to the login page
+};
 </script>
 
 <template>
-    <Navbar></Navbar>
-    <div id="holder">
-        <RoundedBox>
-            <div id="heading">
-              <h1>Account Information</h1>
-            </div>
-            <p>Name: </p>
-            <p>Email:</p>
-            <p>Role:</p>
-            <div id="signout">
-                <button id="sign-out">Sign Out</button>
-            </div>
-        </RoundedBox>
-    </div>
-
+  <Navbar></Navbar>
+  <div id="holder">
+    <RoundedBox>
+      <div id="heading">
+        <h1>Account Information</h1>
+      </div>
+      <p>Name: {{ employee.firstName }} {{ employee.lastName }}</p>
+      <p>Email: {{ employee.email }}</p>
+      <p>Role: {{ employee.role }}</p>
+      <div id="signout">
+        <button id="sign-out" @click="signOut">Sign Out</button>
+      </div>
+    </RoundedBox>
+  </div>
 </template>
 
 <style scoped>
-
   #heading {
     display: flex;
     justify-content: center;
   }
+
   #signout {
     display: flex;
     justify-content: center;
@@ -73,9 +109,11 @@ defineOptions({
     background-color: #D0E1F9;
     font-family: "Poppins";
   }
+
   p {
     color: #1F4691;
   }
+
   h1 {
     font-family: "Poppins";
     font-size: 18px;
@@ -84,5 +122,4 @@ defineOptions({
     margin: 0;
     color: #1F4691;
   }
-
 </style>
