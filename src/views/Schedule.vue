@@ -4,6 +4,7 @@ import axios from '../config/axios.js';
 import { useRouter } from 'vue-router';
 import { format } from 'date-fns';
 import Navbar from '@/components/Navbar.vue';
+import { CoverageOptions } from '../models/coverageRequests/coverageOptions.ts'; // Import CoverageOptions enum
 
 const router = useRouter();
 
@@ -159,7 +160,42 @@ const filteredShifts = computed(() => {
 
   return filtered;
 });
+
+// Handle coverage option selection
+const selectedCoverageOption = ref<CoverageOptions | null>(null); // Track selected coverage option
+
+// Handle coverage option button click
+const handleCoverageOptionClick = async (coverageType: CoverageOptions, shift: shift) => {
+  selectedCoverageOption.value = coverageType;
+  await handleSubmit(coverageType, shift); // Submit the selected coverage type and shift
+};
+
+// Handle form submission
+const handleSubmit = async (coverageOption: CoverageOptions, shift: shift) => {
+  if (!shift) {
+    console.error('No shift selected.');
+    return;
+  }
+
+  const data = {
+    shiftID: shift.id, // Use start time or unique shift ID
+    coverageType: coverageOption, // Pass the selected coverage option (enum value)
+    note: null, // Set the note to null as per your requirement
+  };
+
+  try {
+    const response = await axios.put('/employees/offerup', data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    console.log('Success:', response.data);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
 </script>
+
 
 <template>
   <Navbar></Navbar>
@@ -206,53 +242,27 @@ const filteredShifts = computed(() => {
 
             <div class="shift-card-body">
               <div class="shift-time">{{ shift.start_time }} - {{ shift.end_time }}</div>
-              <div class="shift-employee">Assigned to: {{ shift.assignedEmployeeName }}</div>
+              <div class="shift-employee">Assigned Employee: {{ shift.assignedEmployeeName }}</div>
             </div>
 
             <div class="shift-card-footer">
-              <button style="color: white; background-color: ;">Offer Shift</button>
+              <button v-if="!selectedCoverageOption" @click="handleCoverageOptionClick(CoverageOptions.PickupOnly, shift)">
+                Pickup Only
+              </button>
+              <button v-if="!selectedCoverageOption" @click="handleCoverageOptionClick(CoverageOptions.TradeOnly, shift)">
+                Trade Only
+              </button>
+              <button v-if="!selectedCoverageOption" @click="handleCoverageOptionClick(CoverageOptions.PickupOrTrade, shift)">
+                Both
+              </button>
             </div>
           </div>
         </div>
       </div>
-      <div id="schedule-container">
-        <div id="schedule-time">
-          <div>7 AM </div>
-          <div>8 AM </div>
-          <div>9 AM</div>
-          <div>10 AM</div>
-          <div>11 AM</div>
-          <div>12 PM</div>
-          <div>1 PM</div>
-          <div>2 PM</div>
-          <div>3 PM</div>
-          <div>4 PM</div>
-          <div>5 PM</div>
-          <div>6 PM</div>
-          <div>7 PM</div>
-          <div>8 PM</div>
-          <div>9 PM</div>
-          <div>10 PM</div>
-          <div>11 PM</div>
-          <div>12 AM</div>
-          <div>1 AM</div>
-          <div>2 AM</div>
-          <div>3 AM</div>
-          <div>4 AM</div>
-          <div>5 AM</div>
-          <div>6 AM</div>                    
-        </div>
-        <div id="schedule-day">Mon</div>
-        <div id="schedule-day">Tue</div>
-        <div id="schedule-day">Wed</div>
-        <div id="schedule-day">Thu</div>
-        <div id="schedule-day">Fri</div>
-        <div id="schedule-day">Sat</div>
-        <div id="schedule-day">Sun</div>
-      </div>
     </div>
   </div>
 </template>
+
 
 
 

@@ -29,6 +29,7 @@ const activeUser = ref<User>();
 const myCoverageRequests = ref<CoverageRequestDetail[]>([]);
 const otherEmployeesCoverageRequests = ref<CoverageRequestDetail[]>([]);
 const myTimeOffRequests = ref([]);
+
 const fetchActiveUser = async () => {
   try {
     const response = await axios.get('user/signedin', { withCredentials: true });
@@ -63,22 +64,35 @@ const fetchCoverageRequests = async (params: CoverageRequestQueryParams, target:
 };
 
 onMounted(async () => {
-  console.log("mount")
+  console.log("mount");
   await fetchActiveUser();
   let startDate = new Date(Date.now());
   let endDate = new Date(startDate.getDay() + 31);
-  fetchCoverageRequests({ employeeID: activeUser.value?.id, startAvailability: startDate, endAvailability: endDate }, myCoverageRequests);
-  console.log(myCoverageRequests)
-  fetchCoverageRequests({ requiredRole: activeUser.value?.employeeRole }, otherEmployeesCoverageRequests);
-  console.log(otherEmployeesCoverageRequests.value)
-  fetchTimeOff()
+  
+  // Fetch coverage requests that the active user has requested to cover (these should show in My Coverage Requests)
+  fetchCoverageRequests(
+    { employeeID: activeUser.value?.id, startAvailability: startDate, endAvailability: endDate }, 
+    myCoverageRequests
+  );
+  
+  // Fetch coverage requests that other employees have requested (these should show in Trades & Pickups)
+  fetchCoverageRequests(
+    { requiredRole: activeUser.value?.employeeRole }, 
+    otherEmployeesCoverageRequests
+  );
+
+  console.log(myCoverageRequests);
+  console.log(otherEmployeesCoverageRequests.value);
+  fetchTimeOff();
 });
+
+
 
 const goToRequest = () => {
   router.push('./request');
 };
 
-const request_type = ref([MY_COVERAGE, MY_TIME_OFF, 'Available shifts', TRADES_AND_PICKUPS]);
+const request_type = ref([MY_COVERAGE, MY_TIME_OFF, TRADES_AND_PICKUPS]);
 const selectedType = ref(MY_COVERAGE);
 const currentDate = new Date();
 type LocationDictionary = {
@@ -251,50 +265,38 @@ function formatDateTime(dateTime: string): string {
       <div style="display: flex;"> Status: {{ isManagerApprovedToString(request.isManagerApproved) }}</div>
     </div>
   </div>
-  <div v-if="selectedType == MY_COVERAGE">
-      <div id="available-shifts">
-        <div class="info-cards" v-if="myCoverageRequests.length === 0"
-          style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
-          No active requests.
-        </div>
-      </div>
+<!-- Display My Coverage Requests -->
+<div v-if="selectedType == MY_COVERAGE">
+  <div id="available-shifts">
+    <div class="info-cards" v-if="myCoverageRequests.length === 0" style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
+      No active requests.
+    </div>
     <div class="info-cards" v-for="(request, index) in myCoverageRequests" :key="index" :style="getOtherOfferedStyle(request)">
       <div style="width: 300px;">{{ formatAddress(locations[request.shift.location].streetAddress) }}</div>
-      <div>{{ request.shift.shiftPeriod.start.toLocaleDateString() }} </div>
-      <div>{{ request.shift.shiftPeriod.end.toLocaleDateString() }}</div>
+      <div>{{ new Date(request.shift.shiftPeriod.start).toLocaleDateString() }} </div>
+      <div>{{ new Date(request.shift.shiftPeriod.end).toLocaleDateString() }}</div>
       <div>{{ coverageTypeToString(request.coverageRequest.coverageType) }}</div>
-
       <button @click="takeShift(request)">Take Shift</button>
     </div>
   </div>
-  <div id="available-shifts" v-if="selectedType == 'Available shifts'">
-    <div class="info-cards" v-for="(request, index) in availableShifts" :key="index" :style="getOtherOfferedStyle(request)">
-      <div style="width: 300px;">{{ formatAddress(locations[request.location].streetAddress) }}</div>
-      <div>From: {{ formatDateTime(request.shiftPeriod.start) }} </div>
-      <div>To: {{ formatDateTime(request.shiftPeriod.end) }}</div>
-      <button id="take-shift" @click="takeShift(request)">Take Shift</button>
-    </div>
-  </div>
-  <div id="available-shifts" v-if="selectedType == TRADES_AND_PICKUPS">
-    <div class="info-cards" v-if="otherEmployeesCoverageRequests.length === 0"
-      style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
+</div>
+
+<!-- Display Trades & Pickups -->
+<div v-if="selectedType == TRADES_AND_PICKUPS">
+  <div id="available-shifts">
+    <div class="info-cards" v-if="otherEmployeesCoverageRequests.length === 0" style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
       No trades or pickups available.
     </div>
-    <!-- <div class="info-cards" v-if="otherEmployeesCoverageRequests.length === 0" style="text-align: center; font-size: 18px; ; padding: 20px;">
-      <select>
-        <option value="both"> Pickups and Trades</option>
-        <option value="pickups"> Pickups Only</option>
-        <option value="trades"> Trades On </option>
-      </select>
-    </div> -->
     <div class="info-cards" v-for="(request, index) in otherEmployeesCoverageRequests" :key="index" :style="getOtherOfferedStyle(request)">
       <div style="width: 300px;">{{ formatAddress(locations[request.shift.location].streetAddress) }}</div>
-      <div>{{ request.shift.shiftPeriod.start }} </div>
-      <div>{{ request.shift.shiftPeriod.end }}</div>
+      <div>{{ new Date(request.shift.shiftPeriod.start).toLocaleDateString() }} </div>
+      <div>{{ new Date(request.shift.shiftPeriod.end).toLocaleDateString() }}</div>
       <div>{{ coverageTypeToString(request.coverageRequest.coverageType) }}</div>
       <button @click="takeShift(request)">Take Shift</button>
     </div>
   </div>
+</div>
+
 
 
 </template>

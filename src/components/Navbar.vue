@@ -19,7 +19,7 @@
 <script>
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
-import axios from 'axios';  // Assuming axios is set up
+import axios from '../config/axios.js';  // Assuming axios is set up
 
 export default {
   name: 'Navbar',
