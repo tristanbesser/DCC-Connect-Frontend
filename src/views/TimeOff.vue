@@ -33,7 +33,6 @@ const fetchActiveUser = async () => {
   try {
     const response = await axios.get('user/signedin', { withCredentials: true });
     activeUser.value = response.data;
-    console.log
     console.log(response.data);
   } catch (error) {
     console.error('Error fetching active user:', error);
