@@ -113,7 +113,7 @@ const takeShift = (offer) => {
   console.log(offer.id)
   axios.post(API_URL + "/employees/pickup", {
     openShiftID: offer.id,
-    employeeID: "POPULATE THIS WITH THE ID OF THE WORKING EMPLOYEE"
+    employeeID: activeUser.value?.id
   }).then(response => {
     if (index !== -1) {
       availableShifts.value.splice(index, 1);
