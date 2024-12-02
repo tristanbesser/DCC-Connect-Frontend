@@ -29,7 +29,7 @@ const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Fri
 // Fetch employee details by employee ID
 const fetchEmployee = async (employeeID: string) => {
   try {
-    const response = await axios.get(`https://localhost:32774/employees/get/${employeeID}`, {
+    const response = await axios.get(`employees/get/${employeeID}`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -65,7 +65,7 @@ interface employee {
 // Fetch shifts from the API
 const fetchShifts = async () => {
   try {
-    const response = await axios.get('https://localhost:32774/shifts/get', {
+    const response = await axios.get('shifts/get', {
       headers: {
         "Content-Type": "application/json",
       },
@@ -117,7 +117,7 @@ const fetchShifts = async () => {
 // Fetch locations from the API
 const fetchLocations = async () => {
   try {
-    const response = await axios.get('https://localhost:32774/location/get', {
+    const response = await axios.get('location/get', {
       headers: {
         "Content-Type": "application/json",
       },

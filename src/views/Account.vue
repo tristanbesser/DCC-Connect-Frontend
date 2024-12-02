@@ -19,13 +19,10 @@ const employee = ref({
   role: '',
 });
 
-// API URL to fetch employee data
-const apiurl = "https://localhost:32774/user/signedin";
-
 // Method to fetch employee data
 const getEmployeeData = async () => {
   try {
-    const response = await axios.get(apiurl, {
+    const response = await axios.get('user/signedin', {
       headers: {
         "Content-Type": "application/json",
       },

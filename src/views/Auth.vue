@@ -19,7 +19,7 @@ async function loginProcess() {
     }
 
     try {
-        const response = await axios.post('https://localhost:32774/user/login', data, {
+        const response = await axios.post('user/login', data, {
             headers: {
                 "Content-Type": "application/json"
                 

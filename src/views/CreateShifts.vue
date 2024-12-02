@@ -18,13 +18,11 @@ const shift = ref({
   employeeID: "", // Add employeeID to the shift object
 });
 
-const apiurl3 = "https://localhost:32774/employees/get";
-const apiurl4 = "https://localhost:32774/location/get";
 
 // Method to fetch employees
 const getEmployees = async () => {
   try {
-    const response = await axios.get(apiurl3, {
+    const response = await axios.get('/employees/get', {
       headers: {
         "Content-Type": "application/json",
       },
@@ -40,7 +38,7 @@ const getEmployees = async () => {
 // Method to fetch locations
 const getLocations = async () => {
   try {
-    const response = await axios.get(apiurl4, {
+    const response = await axios.get('/location/get', {
       headers: {
         "Content-Type": "application/json",
       },
@@ -75,14 +73,11 @@ const handleEmployeeSelect = (employeeID: string) => {
   }
 };
 
-const apiurl = "https://localhost:32774/shifts/create";
-const apiurl2 = "https://localhost:32774/shifts/assign";
-
 // Create and assign a shift
 const handleCreateAndAssignShift = async () => {
   try {
     // Step 1: Create the shift
-    const createResponse = await axios.post(apiurl, {
+    const createResponse = await axios.post('shifts/create', {
       locationID: shift.value.locationID, // Updated to locationID
       shiftPeriod: {
         start: new Date(shift.value.shiftPeriod.start).toISOString(),
@@ -104,7 +99,7 @@ const handleCreateAndAssignShift = async () => {
     }
 
     // Step 2: Assign the shift to the selected employee
-    const assignResponse = await axios.put(apiurl2, {
+    const assignResponse = await axios.put('shifts/assign', {
       shiftIDString: createdShiftId,
       employeeIDString: shift.value.employeeID,
     }, {

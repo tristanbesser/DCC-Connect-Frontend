@@ -23,9 +23,9 @@ async function registrationProcess() {
         employeeRole: formData.value.employeeRole, 
     }
 
-    const apiurl = 'https://localhost:32774/user/register'
+
     try {
-        const response = await axios.post(apiurl, data, {
+        const response = await axios.post('user/register', data, {
             headers: {
                 "Content-Type": "application/json"
             },
