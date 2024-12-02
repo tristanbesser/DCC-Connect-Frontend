@@ -1,23 +1,88 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
 import axios from '../config/axios.js';
+
+import type Shift from "@/models/shift.js";
+import {coverageTypeToString} from "@/models/coverageRequests/coverageOptions.js"
+import type CoverageRequest from '@/models/coverageRequests/coverageRequest.js';
+import type CoverageRequestQueryParams from '@/models/coverageRequests/coverageRequestQueryParams.js';
+import { formatAddress, type Address } from '@/models/address.js';
+import type User from '@/models/user.js';
+import type Location from '@/models/location.js';
+import type CoverageRequestDetail from '@/models/coverageRequests/CoverageRequestDetail.js';
+import type ShiftLocation from '@/models/shiftLocation.js';
+
 const router = useRouter();
+
 
 defineOptions({
   name: 'time-off',
+});
+const API_URL = "https://localhost:32769/";
+
+// State variables
+const TRADES_AND_PICKUPS = "Trades & Pickups"
+const MY_COVERAGE = "My Coverage Requests"
+const TAB_OPTIONS = [MY_COVERAGE, TRADES_AND_PICKUPS]
+const activeUser = ref<User>();
+const myCoverageRequests = ref<CoverageRequestDetail[]>([]);
+const otherEmployeesCoverageRequests = ref<CoverageRequestDetail[]>([]);
+const myTimeOffRequests = ref([]);
+const fetchActiveUser = async () => {
+  try {
+    const response = await axios.get(`${API_URL}user/signedin`, { withCredentials: true });
+    activeUser.value = response.data;
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error fetching active user:', error);
+    //Consider redirecting to sign in page on 401 here
+  }
+};
+
+const fetchCoverageRequests = async (params: CoverageRequestQueryParams, target: any) => {
+  try {
+    const response = await axios.get(`${API_URL}coverage/get/detailed`, {
+      withCredentials: true,
+      params: params,
+    });
+    target.value = response.data;
+    console.log(response.data)
+  } catch (error) {
+    console.error('Error fetching coverage requests:', error);
+  }
+};
+
+onMounted(async () => {
+  console.log("mount")
+  await fetchActiveUser();
+  let startDate = new Date(Date.now());
+  let endDate = new Date(startDate.getDay() + 31);
+  fetchCoverageRequests({ employeeID: activeUser.value?.id, startAvailability: startDate, endAvailability: endDate }, myCoverageRequests);
+  console.log(myCoverageRequests)
+  fetchCoverageRequests( {requiredRole:activeUser.value?.employeeRole},otherEmployeesCoverageRequests);
+  console.log(otherEmployeesCoverageRequests.value)
 });
 
 const goToRequest = () => {
   router.push('./request');
 };
-const apiurl3 = "https://localhost:32769/"
 
-const request_type = ref(['My time off requests', 'My offered shifts', 'Available shifts']);
-const selectedType = ref('My time off requests');
+const request_type = ref([MY_COVERAGE, 'My offered shifts', 'Available shifts',TRADES_AND_PICKUPS]);
+const selectedType = ref(MY_COVERAGE);
 const currentDate = new Date();
-const locations=ref([])
+type LocationDictionary = {
+    [key: string]: {
+      streetAddress: Address;
+        patientName?: string | null;
+    };
+}
+const locationsToDict=(shiftLocations:ShiftLocation[])=>{
+  const reducer=(accumulator:LocationDictionary,location:ShiftLocation)=>{const { id, ...rest } = location; accumulator[id] = rest; return accumulator; }
+  return shiftLocations.reduce(reducer,{});
+}
+const locations = ref<LocationDictionary>({})
 const shifts = ref([]);
 const requests = ref([]);
 /*Populate this to the result of this request.
@@ -25,154 +90,115 @@ axios.get(apiurl3+"coverage/get",{
   params:
   {
     employeeID:"POPULATE THIS BASED ON ACTIVE"
-  }
-})*/
-
+    }
+    })*/
+const shiftTrades = ref([]);
 const availableShifts = ref([]);
 const offers = ref([]);
-
 const takeShift = (offer) => {
   // Find the index of the offer in the array
   const index = availableShifts.value.findIndex(o => o === offer);
   console.log(offer.id)
-  axios.post(apiurl3+"/employees/pickup",{
-  openShiftID: offer.id,
-  employeeID: "POPULATE THIS WITH THE ID OF THE WORKING EMPLOYEE"
-}).then(response=>{
-  if (index !== -1) {
-    availableShifts.value.splice(index, 1);
-  }
-  alert("Successfully took shift.")
-}).catch(error=>{
-  console.log(index)
-  console.log(error)
-  alert("Failed to pick up shift.")
-})
+  axios.post(API_URL + "/employees/pickup", {
+    openShiftID: offer.id,
+    employeeID: "POPULATE THIS WITH THE ID OF THE WORKING EMPLOYEE"
+  }).then(response => {
+    if (index !== -1) {
+      availableShifts.value.splice(index, 1);
+    }
+    alert("Successfully took shift.")
+  }).catch(error => {
+    console.log(index)
+    console.log(error)
+    alert("Failed to pick up shift.")
+  })
   // Remove the offer if it exists
-  
+
 };
-class Shift {
-    constructor(start_time, day, location, duration){
-        this.start_time = start_time;
-        this.day = day;
-        this.location = location;
-        this.duration = duration;
-    }
-}
-class request {
-    constructor(start_date, end_date, reason){
-        this.start_date = start_date;
-        this.end_date = end_date;
-        this.reason = reason;
-    }
-}
-class shiftOffer {
-    constructor(owner, shift){
-        this.owner = owner;
-        this.shift = shift;
-    }
-}
 
-shifts.value.push(new Shift(7, 0, 'Location 1', 4));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
-
-offers.value.push(new shiftOffer('Jamie', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('self', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('self', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('Josh', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('Angela', new Shift(7, 0, 'Location 1', 4)));
-
-axios.get(apiurl3+"shifts/get",{
-    params:{
-    openShiftsOnly:true
-  }}).then(response=>{
-    console.log(response.data)
-    availableShifts.value=response.data})
-axios.get(apiurl3+"location/get").then(response=>{
-    console.log(response.data)
-    locations.value=response.data.reduce((acc, item) => { const { id, ...rest } = item; acc[id] = rest; return acc; }, {});})
+axios.get(API_URL + "shifts/get", {
+  params: {
+    openShiftsOnly: true
+  }
+}).then(response => {
+  console.log(response.data)
+  availableShifts.value = response.data
+})
+axios.get(API_URL + "location/get", { withCredentials: true }).then((response: { data: ShiftLocation[]; }) => {
+  console.log(response.data)
+  locations.value = locationsToDict(response.data);
+})
 
 
 function getListStyle(request) {
-    const requestStartDate = new Date(request.start_date); // Convert start_date to a Date object
-    if (requestStartDate < currentDate) {
-        return {
-            width: `95%`,
-            minHeight: '60px',
-            backgroundColor: 'var(--background)', // Apply the current color for the background
-            color: 'var(--text1)',         // Text color
-            display: 'flex',               // Center content
-            justifyContent: 'center',      // Horizontally center
-            alignItems: 'center',          // Vertically center
-            borderRadius: '10px',          // Rounded corners
-            margin: '2px',                 // Add spacing
-            justifyContent:'space-between',
-            padding: '5px',
-        };
-    } else {
-        return {
-            display: 'none',
-        };
-    }
+  const requestStartDate = new Date(request.start_date); // Convert start_date to a Date object
+  if (requestStartDate < currentDate) {
+    return {
+      width: `95%`,
+      minHeight: '60px',
+      backgroundColor: 'var(--background)', // Apply the current color for the background
+      color: 'var(--text1)',         // Text color
+      display: 'flex',               // Center content
+      justifyContent: 'center',      // Horizontally center
+      alignItems: 'center',          // Vertically center
+      borderRadius: '10px',          // Rounded corners
+      margin: '2px',                 // Add spacing
+      justifyContent: 'space-between',
+      padding: '5px',
+    };
+  } else {
+    return {
+      display: 'none',
+    };
+  }
 }
 function getOfferStyle(request) {
-    if (request.owner == 'self') {
-        return {
-            width: `95%`,
-            minHeight: '60px',
-            backgroundColor: 'var(--background)', // Apply the current color for the background
-            color: 'var(--text1)',         // Text color
-            display: 'flex',               // Center content
-            justifyContent: 'center',      // Horizontally center
-            alignItems: 'center',          // Vertically center
-            borderRadius: '10px',          // Rounded corners
-            margin: '2px',                 // Add spacing
-            justifyContent:'space-between',
-            padding: '5px',
-        };
-    } else {
-        return {
-            display: 'none',
-        };
-    }
+  if (request.owner == 'self') {
+    return {
+      width: `95%`,
+      minHeight: '60px',
+      backgroundColor: 'var(--background)', // Apply the current color for the background
+      color: 'var(--text1)',         // Text color
+      display: 'flex',               // Center content
+      justifyContent: 'center',      // Horizontally center
+      alignItems: 'center',          // Vertically center
+      borderRadius: '10px',          // Rounded corners
+      margin: '2px',                 // Add spacing
+      justifyContent: 'space-between',
+      padding: '5px',
+    };
+  } else {
+    return {
+      display: 'none',
+    };
+  }
 }
 function getOtherOfferedStyle(request) {
-    if (request.owner != 'self') {
-        return {
-            width: `95%`,
-            minHeight: '60px',
-            backgroundColor: 'var(--background)', // Apply the current color for the background
-            color: 'var(--text1)',         // Text color
-            display: 'flex',               // Center content
-            justifyContent: 'center',      // Horizontally center
-            alignItems: 'center',          // Vertically center
-            borderRadius: '10px',          // Rounded corners
-            margin: '2px',                 // Add spacing
-            justifyContent:'space-between',
-            padding: '5px',
-        };
-    } else {
-        return {
-            display: 'none',
-        };
-    }
+  if (request.owner != 'self') {
+    return {
+      width: `95%`,
+      minHeight: '60px',
+      backgroundColor: 'var(--background)', // Apply the current color for the background
+      color: 'var(--text1)',         // Text color
+      display: 'flex',               // Center content
+      justifyContent: 'center',      // Horizontally center
+      alignItems: 'center',          // Vertically center
+      borderRadius: '10px',          // Rounded corners
+      margin: '2px',                 // Add spacing
+      justifyContent: 'space-between',
+      padding: '5px',
+    };
+  } else {
+    return {
+      display: 'none',
+    };
+  }
 }
-type Address = { streetAddress: string; 
-  apartmentNumber?: string | null; 
-  city: string; 
-  state: string; 
-  postalCode: string; 
-  country: string; };
-  function formatAddress(address: Address): string { const { streetAddress, apartmentNumber, city, state, postalCode } = address; return `${streetAddress}${apartmentNumber ? ', ' + apartmentNumber : ''}, ${city}, ${state} ${postalCode}`; }
-
 </script>
 
 <template>
   <Navbar></Navbar>
-  
+
   <div id="filters">
     <h1>Schedule Change Requests</h1>
     <div id="request">
@@ -180,41 +206,64 @@ type Address = { streetAddress: string;
     </div>
     <!-- Row of clickable options -->
     <div id="options">
-      <div
-        v-for="option in request_type"
-        :key="option"
-        :class="['option-item', { selected: selectedType === option }]"
-        @click="selectedType = option"
-      >
+      <div v-for="option in request_type" :key="option" :class="['option-item', { selected: selectedType === option }]"
+        @click="selectedType = option">
         {{ option }}
       </div>
     </div>
-    
+
   </div>
-<div v-if="selectedType == 'My time off requests'">
+  <div v-if="selectedType == 'My time off requests'">
     <div v-for="(request, index) in requests" :key="index" :style="getListStyle(request)">
-        <div>{{request.start_date}} - {{ request.end_date }}</div>
-        <div>{{ request.reason }}</div>
+      <div>{{ request.start_date }} - {{ request.end_date }}</div>
+      <div>{{ request.reason }}</div>
     </div>
-</div>
-<div v-if="selectedType == 'My offered shifts'">
+  </div>
+  <div v-if="selectedType == 'My offered shifts'">
+    <div v-if="offers.length === 0" style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
+      No offered shifts
+    </div>
     <div v-for="(request, index) in offers" :key="index" :style="getOfferStyle(request)">
-        <div>{{ request.shift.start_time }} - {{ request.shift.duration +  request.shift.start_time}}</div>
-        <div>{{ request.shift.location }}</div>
-        <div>{{ request.shift.start_time }}</div>
-        <div>{{ request.owner }}</div>
+      <div>{{ request.shift.start_time }} - {{ request.shift.duration + request.shift.start_time }}</div>
+      <div>{{ request.shift.location }}</div>
+      <div>{{ request.shift.start_time }}</div>
+      <div>{{ request.owner }}</div>
     </div>
-</div>
-<div v-if="selectedType == 'Available shifts'">
+  </div>
+  <div v-if="selectedType == 'Available shifts'">
     <div v-for="(request, index) in availableShifts" :key="index" :style="getOtherOfferedStyle(request)">
       <div style="width: 300px;">{{ formatAddress(locations[request.location].streetAddress) }}</div>
       <div>{{ request.shiftPeriod.start }} </div>
-        <div>{{ request.shiftPeriod.end }}</div>
-        <button @click="takeShift(request)">Take Shift</button>
+      <div>{{ request.shiftPeriod.end }}</div>
+      <button @click="takeShift(request)">Take Shift</button>
     </div>
-</div>
+  </div>
+  <div v-if="selectedType == 'Shift trades'">
+    <div v-for="(request, index) in availableShifts" :key="index" :style="getOtherOfferedStyle(request)">
+      <div style="width: 300px;">{{ formatAddress(locations[request].streetAddress) }}</div>
+      <div>{{ request.shiftPeriod.start }} </div>
+      <div>{{ request.shiftPeriod.end }}</div>
+      <button @click="takeShift(request)">Take Shift</button>
+    </div>
+  </div>
+  <div v-if="selectedType == TRADES_AND_PICKUPS">
 
-                
+    <div v-if="otherEmployeesCoverageRequests.length === 0" style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
+      No trades or pickups available.
+    </div>
+    <div v-if="otherEmployeesCoverageRequests.length !== 0" style="text-align: center; font-size: 18px; ; padding: 20px;">
+      
+    </div>
+    <div v-for="(request, index) in otherEmployeesCoverageRequests" :key="index" :style="getOtherOfferedStyle(request)">
+      <div style="width: 300px;">{{ formatAddress(locations[request.shift.location].streetAddress) }}</div>
+      <div>{{ request.shift.shiftPeriod.start }} </div>
+      <div>{{ request.shift.shiftPeriod.end }}</div>
+      <div>{{ coverageTypeToString(request.coverageRequest.coverageType) }}</div>
+      <button @click="takeShift(request)">Take Shift</button>
+    </div>
+  </div>
+
+
 </template>
 
 <style scoped>
@@ -222,7 +271,8 @@ type Address = { streetAddress: string;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center; /* Center items vertically */
+  align-items: center;
+  /* Center items vertically */
   padding: 15px 20px;
   background-color: var(--background);
   color: #4f4f4f;
@@ -232,22 +282,24 @@ type Address = { streetAddress: string;
 #options {
   display: flex;
   justify-content: center;
-  gap: 20px; /* Add space between items */
+  gap: 20px;
+  /* Add space between items */
   margin-top: 20px;
 }
 
 #card {
-    height:150px;
-    width: 90%;
-    background-color: var(--third);
-    color: var(--text);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 10px;
-    
-    
+  height: 150px;
+  width: 90%;
+  background-color: var(--third);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+
+
 }
+
 .option-item {
   padding: 10px;
   cursor: pointer;
@@ -261,7 +313,8 @@ type Address = { streetAddress: string;
 
 .option-item.selected {
   font-weight: bold;
-  text-decoration: underline; /* Underline the selected option */
+  text-decoration: underline;
+  /* Underline the selected option */
 }
 
 #request {
