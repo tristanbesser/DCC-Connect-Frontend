@@ -23,7 +23,6 @@ async function registrationProcess() {
         employeeRole: formData.value.employeeRole, 
     }
 
-
     try {
         const response = await axios.post('user/register', data, {
             headers: {

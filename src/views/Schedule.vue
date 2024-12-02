@@ -164,7 +164,7 @@ const filteredShifts = computed(() => {
 <template>
   <Navbar></Navbar>
   <div id='scheduler'>
-    <div style="text-align: center; font-size: 18px; margin-top: 10px">Options</div>
+    <div style="text-align: center; font-size: 18px; margin-top: 10px;">Options</div>
     <div id='filters'>
       <div id="filter-options">
         <!-- Location Dropdown -->

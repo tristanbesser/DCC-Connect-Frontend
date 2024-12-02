@@ -16,7 +16,6 @@ import type ShiftLocation from '@/models/shiftLocation.js';
 
 const router = useRouter();
 
-
 defineOptions({
   name: 'time-off',
 });
@@ -25,7 +24,7 @@ const COVERAGE_OPTIONS = CoverageOptions;
 // State variables
 const TRADES_AND_PICKUPS = "Trades & Pickups"
 const MY_COVERAGE = "My Coverage Requests"
-const MY_TIME_OFF="My Time Off"
+const MY_TIME_OFF = "My Time Off"
 const activeUser = ref<User>();
 const myCoverageRequests = ref<CoverageRequestDetail[]>([]);
 const otherEmployeesCoverageRequests = ref<CoverageRequestDetail[]>([]);
@@ -80,7 +79,7 @@ const goToRequest = () => {
   router.push('./request');
 };
 
-const request_type = ref([MY_COVERAGE,MY_TIME_OFF, 'Available shifts', TRADES_AND_PICKUPS]);
+const request_type = ref([MY_COVERAGE, MY_TIME_OFF, 'Available shifts', TRADES_AND_PICKUPS]);
 const selectedType = ref(MY_COVERAGE);
 const currentDate = new Date();
 type LocationDictionary = {
@@ -140,11 +139,12 @@ axios.get( "location/get", { withCredentials: true }).then((response: { data: Sh
   console.log(response.data)
   locations.value = locationsToDict(response.data);
 })
-function isManagerApprovedToString(isApproved:null|boolean){
-  if(isApproved==null){
+
+function isManagerApprovedToString(isApproved: null | boolean) {
+  if (isApproved == null) {
     return "Awaiting action from manager."
   }
-  return isApproved?"Approved":"Denied";
+  return isApproved ? "Approved" : "Denied";
 }
 
 function getListStyle(request) {
@@ -202,7 +202,7 @@ function getOtherOfferedStyle(request) {
       justifyContent: 'center',      // Horizontally center
       alignItems: 'center',          // Vertically center
       borderRadius: '10px',          // Rounded corners
-      margin: '2px',                 // Add spacing
+      margin: '5px',                 // Add spacing
       justifyContent: 'space-between',
       padding: '5px',
     };
@@ -212,7 +212,17 @@ function getOtherOfferedStyle(request) {
     };
   }
 }
+
+// Add this method to format the date and time
+function formatDateTime(dateTime: string): string {
+  const options = {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  };
+  return new Date(dateTime).toLocaleString('en-US', options);
+}
 </script>
+
 
 <template>
   <Navbar></Navbar>
@@ -231,59 +241,61 @@ function getOtherOfferedStyle(request) {
     </div>
 
   </div>
-  <div v-if="selectedType == MY_TIME_OFF ">
+  <div id="available-shifts" v-if="selectedType == MY_TIME_OFF ">
     <div v-if="myTimeOffRequests.length === 0"
       style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
       No time off requests.
     </div>
     <!-- This block displays our time off requests -->
-    <div v-for="(request, index) in myTimeOffRequests" :key="index" >
-      <div>Time off request for: {{ new Date(request.timeOffTimeSpan.start).toLocaleDateString() }} - {{ new Date(request.timeOffTimeSpan.end).toLocaleDateString() }}</div>
-      <div style="display: block;"><p> <b>Status:</b> {{ isManagerApprovedToString(request.isManagerApproved) }}</p></div>
+    <div class="info-cards" style="gap: 15px;" v-for="(request, index) in myTimeOffRequests" :key="index" >
+      <div >Time off request for: {{ new Date(request.timeOffTimeSpan.start).toLocaleDateString() }} - {{ new Date(request.timeOffTimeSpan.end).toLocaleDateString() }}</div>
+      <div style="display: flex;"> Status: {{ isManagerApprovedToString(request.isManagerApproved) }}</div>
     </div>
   </div>
   <div v-if="selectedType == MY_COVERAGE">
-    <div>
+    <div id="status">
       <label>Status:</label>
       <select style="margin-left: 15px;">
         <option value="open">Open</option>
         <option value="closed">Closed</option>
       </select>
     </div>
-    <div v-if="myCoverageRequests.length === 0"
-      style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
-      No active requests.
-    </div>
-    <div v-for="(request, index) in myCoverageRequests" :key="index" :style="getOtherOfferedStyle(request)">
+      <div id="available-shifts">
+        <div class="info-cards" v-if="myCoverageRequests.length === 0"
+          style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
+          No active requests.
+        </div>
+      </div>
+    <div class="info-cards" v-for="(request, index) in myCoverageRequests" :key="index" :style="getOtherOfferedStyle(request)">
       <div style="width: 300px;">{{ formatAddress(locations[request.shift.location].streetAddress) }}</div>
-      <div>{{ request.shift.shiftPeriod.start }} </div>
-      <div>{{ request.shift.shiftPeriod.end }}</div>
+      <div>{{ request.shift.shiftPeriod.start.toLocaleDateString() }} </div>
+      <div>{{ request.shift.shiftPeriod.end.toLocaleDateString() }}</div>
       <div>{{ coverageTypeToString(request.coverageRequest.coverageType) }}</div>
 
       <button @click="takeShift(request)">Take Shift</button>
     </div>
   </div>
-  <div v-if="selectedType == 'Available shifts'">
-    <div v-for="(request, index) in availableShifts" :key="index" :style="getOtherOfferedStyle(request)">
+  <div id="available-shifts" v-if="selectedType == 'Available shifts'">
+    <div class="info-cards" v-for="(request, index) in availableShifts" :key="index" :style="getOtherOfferedStyle(request)">
       <div style="width: 300px;">{{ formatAddress(locations[request.location].streetAddress) }}</div>
-      <div>{{ request.shiftPeriod.start }} </div>
-      <div>{{ request.shiftPeriod.end }}</div>
-      <button @click="takeShift(request)">Take Shift</button>
+      <div>From: {{ formatDateTime(request.shiftPeriod.start) }} </div>
+      <div>To: {{ formatDateTime(request.shiftPeriod.end) }}</div>
+      <button id="take-shift" @click="takeShift(request)">Take Shift</button>
     </div>
   </div>
-  <div v-if="selectedType == TRADES_AND_PICKUPS">
-    <div v-if="otherEmployeesCoverageRequests.length === 0"
+  <div id="available-shifts" v-if="selectedType == TRADES_AND_PICKUPS">
+    <div class="info-cards" v-if="otherEmployeesCoverageRequests.length === 0"
       style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
       No trades or pickups available.
     </div>
-    <!-- <div v-if="otherEmployeesCoverageRequests.length === 0" style="text-align: center; font-size: 18px; ; padding: 20px;">
+    <!-- <div class="info-cards" v-if="otherEmployeesCoverageRequests.length === 0" style="text-align: center; font-size: 18px; ; padding: 20px;">
       <select>
         <option value="both"> Pickups and Trades</option>
         <option value="pickups"> Pickups Only</option>
         <option value="trades"> Trades On </option>
       </select>
     </div> -->
-    <div v-for="(request, index) in otherEmployeesCoverageRequests" :key="index" :style="getOtherOfferedStyle(request)">
+    <div class="info-cards" v-for="(request, index) in otherEmployeesCoverageRequests" :key="index" :style="getOtherOfferedStyle(request)">
       <div style="width: 300px;">{{ formatAddress(locations[request.shift.location].streetAddress) }}</div>
       <div>{{ request.shift.shiftPeriod.start }} </div>
       <div>{{ request.shift.shiftPeriod.end }}</div>
@@ -296,16 +308,36 @@ function getOtherOfferedStyle(request) {
 </template>
 
 <style scoped>
+#take-shift {
+  display: flex;
+}
+#available-shifts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+    .info-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0px 0px 8px 6px #C0C0C0;
+    margin-bottom: 5px;
+}
+
 #filters {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  /* Center items vertically */
+  justify-content: space-around; /* Space out items more evenly */
+  align-items: center; /* Center items vertically */
   padding: 15px 20px;
-  background-color: var(--background);
-  color: #4f4f4f;
-  border-bottom: 2px solid var(--text2);
+  background-color: #ffffff;
+  color: var(--first);
+  border-bottom: 2px solid black;
+  margin: 4px;
 }
 
 #options {
@@ -325,8 +357,6 @@ function getOtherOfferedStyle(request) {
   justify-content: center;
   align-items: center;
   border-radius: 10px;
-
-
 }
 
 .option-item {
@@ -363,5 +393,9 @@ function getOtherOfferedStyle(request) {
 #request button:hover {
   background-color: var(--second);
   color: var(--text2);
+}
+
+div {
+  font-family: 'Poppins';
 }
 </style>
