@@ -19,7 +19,6 @@ const router = useRouter();
 defineOptions({
   name: 'time-off',
 });
-const API_URL = "https://localhost:32770/";
 const COVERAGE_OPTIONS = CoverageOptions;
 
 // State variables
@@ -32,9 +31,8 @@ const otherEmployeesCoverageRequests = ref<CoverageRequestDetail[]>([]);
 const myTimeOffRequests = ref([]);
 const fetchActiveUser = async () => {
   try {
-    const response = await axios.get(`${API_URL}user/signedin`, { withCredentials: true });
+    const response = await axios.get('user/signedin', { withCredentials: true });
     activeUser.value = response.data;
-    console.log
     console.log(response.data);
   } catch (error) {
     console.error('Error fetching active user:', error);
@@ -43,7 +41,7 @@ const fetchActiveUser = async () => {
 };
 const fetchTimeOff = async () => {
   try {
-    const response = await axios.get(`${API_URL}timeoff/get`, { withCredentials: true });
+    const response = await axios.get('timeoff/get', { withCredentials: true });
     myTimeOffRequests.value = response.data;
     console.log(response.data);
   } catch (error) {
@@ -53,7 +51,7 @@ const fetchTimeOff = async () => {
 };
 const fetchCoverageRequests = async (params: CoverageRequestQueryParams, target: any) => {
   try {
-    const response = await axios.get(`${API_URL}coverage/get/detailed`, {
+    const response = await axios.get('coverage/get/detailed', {
       withCredentials: true,
       params: params,
     });
@@ -110,9 +108,9 @@ const takeShift = (offer) => {
   // Find the index of the offer in the array
   const index = availableShifts.value.findIndex(o => o === offer);
   console.log(offer.id)
-  axios.post(API_URL + "employees/pickup", {
+  axios.put("employees/pickup", {
     openShiftID: offer.id,
-    employeeID: "POPULATE THIS WITH THE ID OF THE WORKING EMPLOYEE"
+    employeeID: activeUser.value?.id
   }).then(response => {
     if (index !== -1) {
       availableShifts.value.splice(index, 1);
@@ -127,15 +125,16 @@ const takeShift = (offer) => {
 
 };
 
-axios.get(API_URL + "shifts/get", {
+axios.get( "shifts/get", {
   params: {
-    openShiftsOnly: true
+    openShiftsOnly: true,
+    requiredRole:activeUser.value?.employeeRole
   }
 }).then(response => {
   console.log(response.data)
   availableShifts.value = response.data
-})
-axios.get(API_URL + "location/get", { withCredentials: true }).then((response: { data: ShiftLocation[]; }) => {
+}).catch((err)=>{console.log(err)})
+axios.get( "location/get", { withCredentials: true }).then((response: { data: ShiftLocation[]; }) => {
   console.log(response.data)
   locations.value = locationsToDict(response.data);
 })

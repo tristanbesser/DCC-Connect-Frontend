@@ -4,6 +4,10 @@ import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
 import RoundedBox from '../components/LoginFrame.vue';
 import axios from '../config/axios.js';
+<<<<<<< HEAD
+=======
+import type User from '@/models/user';
+>>>>>>> fa51b663c104fe8af546f413dbbe6de9004f9823
 
 const router = useRouter();
 
@@ -12,32 +16,18 @@ const gotoChangePassword = () => {
 };
 
 // Reactive data to store employee information
-const employee = ref({
-  firstName: '',
-  lastName: '',
-  email: '',
-  role: '',
-});
-
-// API URL to fetch employee data
-const apiurl = "https://localhost:32770/user/signedin";
+const employee = ref<User>();
 
 // Method to fetch employee data
 const getEmployeeData = async () => {
   try {
-    const response = await axios.get(apiurl, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+    const response = await axios.get('user/signedin', {
       withCredentials: true
     });
 
     // Assuming the response contains the employee data
-    const employeeData = response.data;
-    employee.value.firstName = employeeData.firstName;
-    employee.value.lastName = employeeData.lastName;
-    employee.value.email = employeeData.email;
-    employee.value.role = employeeData.employeeRole;
+    console.log(response.data)
+    employee.value = response.data;
   } catch (error) {
     console.error("Error fetching employee data:", error);
   }
@@ -63,9 +53,9 @@ const signOut = () => {
       <div id="heading">
         <h1>Account Information</h1>
       </div>
-      <p>Name: {{ employee.firstName }} {{ employee.lastName }}</p>
-      <p>Email: {{ employee.email }}</p>
-      <p>Role: {{ employee.role }}</p>
+      <p>Name: {{ employee?.firstName }} {{ employee?.lastName }}</p>
+      <p>Email: {{ employee?.email }}</p>
+      <p>Role: {{ employee?.employeeRole }}</p>
       <div id="signoutnchangepassword">
         <button id="change-password" @click="gotoChangePassword">Change Password</button>
         <button id="sign-out" @click="signOut">Sign Out</button>

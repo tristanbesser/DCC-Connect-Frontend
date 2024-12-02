@@ -30,7 +30,7 @@ export default {
     // Fetch the signed-in user data and set the role
     const fetchUserData = async () => {
       try {
-        const response = await axios.get('https://localhost:32770/user/signedin', {
+        const response = await axios.get('/user/signedin', {
           headers: {
             "Content-Type": "application/json",
           },
