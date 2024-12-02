@@ -4,10 +4,7 @@ import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
 import RoundedBox from '../components/LoginFrame.vue';
 import axios from '../config/axios.js';
-<<<<<<< HEAD
-=======
 import type User from '@/models/user';
->>>>>>> fa51b663c104fe8af546f413dbbe6de9004f9823
 
 const router = useRouter();
 
