@@ -1,4 +1,4 @@
-enum CoverageOptions {
+export enum CoverageOptions {
     PickupOnly = 0,
     TradeOnly = 1,
     PickupOrTrade = 2
@@ -13,4 +13,3 @@ export function coverageTypeToString(coverageType: CoverageOptions) {
             return "Pickup/Trade"
     }
 }
-export default CoverageOptions;

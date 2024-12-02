@@ -1,4 +1,4 @@
-import CoverageOptions from "./coverageOptions";
+import {CoverageOptions} from "./coverageOptions";
 
 export default interface CoverageRequest {
     shiftID: string,
