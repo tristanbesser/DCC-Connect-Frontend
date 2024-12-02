@@ -1,15 +1,33 @@
 <script setup>
-import { NavigationFailureType } from 'vue-router';
-import RoundedBox from '../components/LoginFrame.vue'
-import Navbar from '@/components/Navbar.vue';
+import { ref } from 'vue'; // Import 'ref' to bind form values
+import { useRouter } from 'vue-router'; // Import useRouter for navigation
 import axios from '../config/axios.js';
+import RoundedBox from '../components/LoginFrame.vue';
+import Navbar from '@/components/Navbar.vue';
+
 defineOptions({
     name: "ChangePassword"
 });
-function putUpdatePassword(newPassword) {
-    axios.put("/password/reset", { newPassword: newPassword, }, { withCredentials: true }).then(resp=>alert("Successfully changed passwrod")).catch(err=>alert("Failed to reset password."))
-}
 
+const router = useRouter();
+
+// Form input data
+const newPassword = ref('');
+const confirmPassword = ref('');
+
+// Function to update password
+function putUpdatePassword() {
+    if (newPassword.value !== confirmPassword.value) {
+        alert('Passwords do not match.');
+        return;
+    }
+    axios.put("/password/reset", { newPassword: newPassword.value }, { withCredentials: true })
+        .then(() => {
+            alert("Successfully changed password.");
+            router.push('./account'); // Navigate to the account page
+        })
+        .catch(() => alert("Failed to reset password."));
+}
 </script>
 
 <template>
@@ -17,19 +35,33 @@ function putUpdatePassword(newPassword) {
         <RoundedBox id="frame">
             <div id="heading">
                 <h1>Change Password</h1>
-                <h2>Enter a new password that contains at least 8 characters, 1 number and 1 special character.</h2>
+                <h2>Enter a new password that contains at least 8 characters, 1 number, and 1 special character.</h2>
             </div>
-            <div id="new-pass">
-                <label>New Password</label>
-                <input type="password" name="password" placeholder="Enter a new password">
-            </div>
-            <div id="confirm-pass">
-                <label>Confirm Password</label>
-                <input type="password" name="password" placeholder="Enter the same password">
-            </div>
-            <div id="set-password-button">
-                <button id="set-password" @click="gotoChangePassword">Set Password</button>
-            </div>
+            <form @submit.prevent="putUpdatePassword">
+                <div id="new-pass">
+                    <label for="newPassword">New Password</label>
+                    <input 
+                        type="password" 
+                        id="newPassword"
+                        v-model="newPassword" 
+                        placeholder="Enter a new password" 
+                        required
+                    />
+                </div>
+                <div id="confirm-pass">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input 
+                        type="password" 
+                        id="confirmPassword"
+                        v-model="confirmPassword" 
+                        placeholder="Enter the same password" 
+                        required
+                    />
+                </div>
+                <div id="set-password-button">
+                    <button id="set-password" type="submit">Set Password</button>
+                </div>
+            </form>
         </RoundedBox>
     </div>
 </template>
@@ -91,7 +123,6 @@ label {
     align-items: center;
     justify-content: center;
 }
-
 
 #set-password {
     background-color: #2857A3;
