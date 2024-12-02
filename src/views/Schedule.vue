@@ -29,7 +29,7 @@ const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Fri
 // Fetch employee details by employee ID
 const fetchEmployee = async (employeeID: string) => {
   try {
-    const response = await axios.get(`https://localhost:32774/employees/get/${employeeID}`, {
+    const response = await axios.get(`https://localhost:32770/employees/get/${employeeID}`, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -65,7 +65,7 @@ interface employee {
 // Fetch shifts from the API
 const fetchShifts = async () => {
   try {
-    const response = await axios.get('https://localhost:32774/shifts/get', {
+    const response = await axios.get('https://localhost:32770/shifts/get', {
       headers: {
         "Content-Type": "application/json",
       },
@@ -117,7 +117,7 @@ const fetchShifts = async () => {
 // Fetch locations from the API
 const fetchLocations = async () => {
   try {
-    const response = await axios.get('https://localhost:32774/location/get', {
+    const response = await axios.get('https://localhost:32770/location/get', {
       headers: {
         "Content-Type": "application/json",
       },
@@ -164,7 +164,7 @@ const filteredShifts = computed(() => {
 <template>
   <Navbar></Navbar>
   <div id='scheduler'>
-    <div style="text-align: center; font-size: 18px; margin-top: 10px">Options</div>
+    <div style="text-align: center; font-size: 18px; margin-top: 10px;">Options</div>
     <div id='filters'>
       <div id="filter-options">
         <!-- Location Dropdown -->

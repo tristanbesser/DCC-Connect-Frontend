@@ -19,7 +19,7 @@ async function verifyCredential() {
   };
 
   try {
-    const response = await axios.post('https://localhost:32774/user/login/validate2fa', data, {
+    const response = await axios.post('https://localhost:32770/user/login/validate2fa', data, {
       headers: {
         "Content-Type": "application/json",
       },
