@@ -112,6 +112,10 @@
     cursor: pointer;
   }
 
+  #next:hover {
+    background-color: #1e417a;
+  }
+
   ::placeholder {
         font-family: 'Poppins';
         font-size: 14px;

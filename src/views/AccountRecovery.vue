@@ -56,6 +56,10 @@ const gotoAccountRecoveryCode = () => {
         cursor: pointer;
     }
 
+    #sign-in:hover {
+        background-color: #1e417a;
+    }
+
     #heading {
         display: flex;
         flex-direction: column;

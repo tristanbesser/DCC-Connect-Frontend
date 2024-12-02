@@ -314,5 +314,6 @@ defineOptions({
         justify-content: center;
         font-family: "Poppins";
         background-color: #D0E1F9;
+        gap: 10px;
     }
 </style>

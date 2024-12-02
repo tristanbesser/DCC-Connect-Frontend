@@ -149,6 +149,10 @@ button {
   cursor: pointer;
 }
 
+button:hover {
+  background-color: #1e417a;
+}
+
 .error-message {
   color: red;
   font-family: 'Poppins', sans-serif;

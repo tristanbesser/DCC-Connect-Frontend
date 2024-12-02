@@ -210,7 +210,7 @@ const filteredShifts = computed(() => {
             </div>
 
             <div class="shift-card-footer">
-              <button class="btn btn-secondary dropdown-toggle" type="button">Options</button>
+              <button style="color: white; background-color: ;">Offer Shift</button>
             </div>
           </div>
         </div>

@@ -242,7 +242,7 @@ function formatDateTime(dateTime: string): string {
 
   </div>
   <div id="available-shifts" v-if="selectedType == MY_TIME_OFF ">
-    <div v-if="myTimeOffRequests.length === 0"
+    <div class="info-cards" v-if="myTimeOffRequests.length === 0"
       style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
       No time off requests.
     </div>
@@ -253,13 +253,6 @@ function formatDateTime(dateTime: string): string {
     </div>
   </div>
   <div v-if="selectedType == MY_COVERAGE">
-    <div id="status">
-      <label>Status:</label>
-      <select style="margin-left: 15px;">
-        <option value="open">Open</option>
-        <option value="closed">Closed</option>
-      </select>
-    </div>
       <div id="available-shifts">
         <div class="info-cards" v-if="myCoverageRequests.length === 0"
           style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">

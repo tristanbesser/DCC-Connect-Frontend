@@ -147,6 +147,10 @@ const goTo2FA = () => {
     cursor: pointer;
   }
 
+  #sign-in:hover {
+    background-color: #1e417a;
+  }
+
   #password {
     display: flex;
     flex-direction: column;

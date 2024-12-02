@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
 import RoundedBox from '../components/LoginFrame.vue';
-import axios from 'axios';
+import axios from '../config/axios.js';
 
 const router = useRouter();
 
