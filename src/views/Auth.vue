@@ -19,7 +19,7 @@ async function loginProcess() {
     }
 
     try {
-        const response = await axios.post('https://localhost:32775/user/login', data, {
+        const response = await axios.post('https://localhost:32774/user/login', data, {
             headers: {
                 "Content-Type": "application/json"
                 
@@ -50,7 +50,7 @@ const router = useRouter();
 
 const gotoAccountRecovery = () => {
   router.push('./account-recovery')
-  };
+};
     
     defineOptions({
         name: 'Auth',

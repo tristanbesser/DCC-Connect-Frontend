@@ -6,22 +6,25 @@ import axios from '../config/axios.js';
 
 // Reactive data
 const employees = ref([]); // Array to store employee data
+const locations = ref([]); // Array to store location data
 const shift = ref({
   id: "",
-  location: "",
+  locationID: "", // Updated to locationID
   shiftPeriod: {
     start: "",
     end: "",
   },
   requiredRole: "",  // This will hold the role for the shift
+  employeeID: "", // Add employeeID to the shift object
 });
 
-const apiurl3 = "https://localhost:32775/employees/get"
+const apiurl3 = "https://localhost:32774/employees/get";
+const apiurl4 = "https://localhost:32774/location/get";
 
 // Method to fetch employees
 const getEmployees = async () => {
   try {
-    const response = await axios.get(apiurl3, {}, {
+    const response = await axios.get(apiurl3, {
       headers: {
         "Content-Type": "application/json",
       },
@@ -34,28 +37,53 @@ const getEmployees = async () => {
   }
 };
 
-// Call getEmployees when the component is mounted
+// Method to fetch locations
+const getLocations = async () => {
+  try {
+    const response = await axios.get(apiurl4, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Location data fetched:", response.data);
+    locations.value = response.data.map((location: any) => ({
+      id: location.id,
+      streetAddress: location.streetAddress.streetAddress,
+    }));
+    
+    // Set default location to the first one available
+    if (locations.value.length > 0) {
+      shift.value.locationID = locations.value[0].id;
+    }
+  } catch (error) {
+    console.error("Error fetching location data:", error);
+  }
+};
+
+// Call getEmployees and getLocations when the component is mounted
 onMounted(() => {
   getEmployees();
+  getLocations();
 });
 
 // Handle employee selection and update the shift object
 const handleEmployeeSelect = (employeeID: string) => {
-  const selectedEmployee = employees.value.find(emp => emp.id.timestamp === employeeID || emp.id === employeeID);
+  const selectedEmployee = employees.value.find(emp => emp.id === employeeID);
   if (selectedEmployee) {
     shift.value.requiredRole = selectedEmployee.role || selectedEmployee.employeeRole || "Unknown"; // Set role based on the employee data
   }
 };
 
-const apiurl = "https://localhost:32775/shifts/create";
-const apiurl2 = "https://localhost:32775/shifts/assign";
+const apiurl = "https://localhost:32774/shifts/create";
+const apiurl2 = "https://localhost:32774/shifts/assign";
 
 // Create and assign a shift
 const handleCreateAndAssignShift = async () => {
   try {
     // Step 1: Create the shift
     const createResponse = await axios.post(apiurl, {
-      location: shift.value.location,
+      locationID: shift.value.locationID, // Updated to locationID
       shiftPeriod: {
         start: new Date(shift.value.shiftPeriod.start).toISOString(),
         end: new Date(shift.value.shiftPeriod.end).toISOString(),
@@ -94,8 +122,6 @@ const handleCreateAndAssignShift = async () => {
 };
 </script>
 
-
-
 <template>
   <Navbar></Navbar>
   <div id="create-shift-container">
@@ -115,20 +141,11 @@ const handleCreateAndAssignShift = async () => {
 
       <div class="form-group">
         <label for="location">Location:</label>
-        <select id="location" v-model="shift.location" required>
-          <option value="Woodside">Woodside</option>
-          <option value="419 Indiana">419 Indiana</option>
-          <option value="Indiana">Indiana</option>
-          <option value="Ridge">Ridge</option>
-          <option value="State Street">State Street</option>
-          <option value="Dakota">Dakota</option>
-          <option value="Lunn">Lunn</option>
-          <option value="King">King</option>
-          <option value="Bond">Bond</option>
-          <option value="Greenwood">Greenwood</option>
-          <option value="French">French</option>
-          <option value="Morefield">Morefield</option>
-          <option value="Shady">Shady</option>
+        <select id="location" v-model="shift.locationID" required>
+          <option value="" disabled>Select Location</option>
+          <option v-for="location in locations" :key="location.id" :value="location.id">
+            {{ location.streetAddress }}
+          </option>
         </select>
       </div>
 
@@ -138,8 +155,8 @@ const handleCreateAndAssignShift = async () => {
           <option value="" disabled>Select Employee</option>
           <!-- Ensure you match the employee structure -->
           <option v-for="employee in employees" 
-                  :key="employee.id.timestamp || employee.id" 
-                  :value="employee.id.timestamp || employee.id">
+                  :key="employee.id" 
+                  :value="employee.id">
             {{ employee.firstName }} {{ employee.lastName }}
           </option>
         </select>
@@ -151,9 +168,6 @@ const handleCreateAndAssignShift = async () => {
     </div>
   </div>
 </template>
-
-
-
 
 <style scoped>
 /* Page container */

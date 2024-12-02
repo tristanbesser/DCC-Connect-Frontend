@@ -3,6 +3,7 @@ import RoundedBox from '../components/LoginFrame.vue';
 import { useRouter } from 'vue-router';
 import axios from '../config/axios.js';
 import { ref } from 'vue';
+import Navbar from '@/components/Navbar.vue';
 
 const formData = ref({
     email: "",
@@ -22,7 +23,7 @@ async function registrationProcess() {
         employeeRole: formData.value.employeeRole, 
     }
 
-    const apiurl = 'https://localhost:32775/user/register'
+    const apiurl = 'https://localhost:32774/user/register'
     try {
         const response = await axios.post(apiurl, data, {
             headers: {
@@ -39,24 +40,10 @@ async function registrationProcess() {
     }
 }
 
-/*
-const router = useRouter();
-
-const gotoRegistration = () => {
-  router.push('./registration')
-  };
-    
-    defineOptions({
-        name: 'Registration',
-    });
-
-const goToRegistration = () => {
-  router.push('./registration')
-};
-*/
 </script>
 
 <template>
+  <Navbar></Navbar>
     <div id="holder">
         <RoundedBox>
             <div id = "heading">

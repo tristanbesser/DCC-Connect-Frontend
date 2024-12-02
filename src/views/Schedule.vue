@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import axios from '../config/axios.js';
 import { useRouter } from 'vue-router';
 import { format } from 'date-fns';
+import Navbar from '@/components/Navbar.vue';
 
 const router = useRouter();
 
@@ -16,11 +17,11 @@ const goToCreateShifts = () => {
 };
 
 // Data for storing shifts, employees, and selected filters
-const shifts = ref([]);
-const employees = ref([]); // Will store employee details in an array
+const shifts = ref<shift[]>([]); // Reactive array for holding shift objects
+const employees = ref<employee[]>([]); // Will store employee details in an array
 const selectedLocation = ref(''); // For storing selected location from dropdown
 const selectedEmployee = ref(''); // For storing selected employee from dropdown
-const locations = ref(['Ridge', 'Lunn', 'Greenwood', 'Dakota', 'Woodside', 'Indiana', '419 Indiana', 'King']);
+const locations = ref<{ id: string, streetAddress: string }[]>([]); // Store locations with ID and address
 
 // Days of the week for mapping
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -28,9 +29,9 @@ const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Fri
 // Fetch employee details by employee ID
 const fetchEmployee = async (employeeID: string) => {
   try {
-    const response = await axios.get(`https://localhost:32775/employees/get/${employeeID}`, {
+    const response = await axios.get(`https://localhost:32774/employees/get/${employeeID}`, {
       headers: {
-      "Content-Type": "application/json",
+        "Content-Type": "application/json",
       },
     });
     return response.data; // Assume the API returns employee details
@@ -40,11 +41,31 @@ const fetchEmployee = async (employeeID: string) => {
   }
 };
 
-// Fetch shifts from the API
+interface shiftPeriod {
+  start: number;
+  end: number;
+}
+
+interface shift {
+  employeeID: string;
+  shiftPeriod: shiftPeriod;
+  location: string;
+  color: string;
+  assignedEmployeeName: string;
+  day: string;
+  start_time: number;
+  end_time: number;
+}
+
+interface employee {
+  name: string;
+  id: number;
+}
+
 // Fetch shifts from the API
 const fetchShifts = async () => {
   try {
-    const response = await axios.get('https://localhost:32775/shifts/get', {
+    const response = await axios.get('https://localhost:32774/shifts/get', {
       headers: {
         "Content-Type": "application/json",
       },
@@ -52,7 +73,7 @@ const fetchShifts = async () => {
 
     console.log("Shifts fetched successfully:", response.data);
     
-    const updatedShifts = await Promise.all(response.data.map(async (shift) => {
+    const updatedShifts = await Promise.all(response.data.map(async (shift: shift) => {
       const employee = shift.employeeID ? await fetchEmployee(shift.employeeID) : null;
       const assignedEmployeeName = employee
         ? `${employee.firstName} ${employee.lastName}`
@@ -62,6 +83,9 @@ const fetchShifts = async () => {
       const formattedDate = format(startDate, 'MM/dd'); // Format date as 'MM/dd'
       const dayOfWeek = daysOfWeek[startDate.getDay()]; // Get the day of the week
 
+      // Convert location ID to streetAddress
+      const location = locations.value.find(loc => loc.id === shift.location)?.streetAddress || "Unknown location";
+
       return {
         ...shift,
         day: `${dayOfWeek}, ${formattedDate}`, // Combine the day of the week and the date
@@ -69,17 +93,18 @@ const fetchShifts = async () => {
         end_time: new Date(shift.shiftPeriod.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         duration: Math.round((new Date(shift.shiftPeriod.end).getTime() - new Date(shift.shiftPeriod.start).getTime()) / 3600000),
         assignedEmployeeName,
-        employeeID: shift.employeeID // Keep employeeID for filtering
+        employeeID: shift.employeeID, // Keep employeeID for filtering
+        location // Use the converted streetAddress
       };
     }));
 
     // Use a Set to filter out duplicate employees
     const uniqueEmployees = updatedShifts.reduce((acc, shift) => {
-      if (!acc.some(emp => emp.id === shift.employeeID)) {
+      if (!acc.some((emp: employee) => emp.id === shift.employeeID)) {
         acc.push({ id: shift.employeeID, name: shift.assignedEmployeeName });
       }
       return acc;
-    }, []);
+    }, []); 
 
     employees.value = uniqueEmployees; // Only unique employees
 
@@ -89,10 +114,33 @@ const fetchShifts = async () => {
   }
 };
 
+// Fetch locations from the API
+const fetchLocations = async () => {
+  try {
+    const response = await axios.get('https://localhost:32774/location/get', {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    console.log("Locations fetched successfully:", response.data);
+    locations.value = response.data.map((location: any) => ({
+      id: location.id,
+      streetAddress: location.streetAddress.streetAddress
+    }));
 
-// Fetch shifts when the component is mounted
+    // Set the selected location to the first available location
+    if (locations.value.length > 0) {
+      selectedLocation.value = locations.value[0].streetAddress;
+    }
+  } catch (error) {
+    console.error("Error fetching locations:", error);
+  }
+};
+
+// Fetch shifts and locations when the component is mounted
 onMounted(() => {
   fetchShifts();
+  fetchLocations();
 });
 
 // Computed property to filter shifts by location and employee
@@ -111,16 +159,7 @@ const filteredShifts = computed(() => {
 
   return filtered;
 });
-
 </script>
-
-
-
-
-
-
-
-
 
 <template>
   <Navbar></Navbar>
@@ -130,23 +169,21 @@ const filteredShifts = computed(() => {
       <div id="filter-options">
         <!-- Location Dropdown -->
         <select id="location" v-model="selectedLocation">
-          <option value="">All Locations</option>
-          <option v-for="(location, index) in locations" :key="index" :value="location">
-            {{ location }}
+          <option v-for="location in locations" :key="location.id" :value="location.streetAddress">
+            {{ location.streetAddress }}
           </option>
         </select>
       </div>
 
-<!-- Employee Dropdown -->
-<div id="filter-options">
-  <select id="employee" v-model="selectedEmployee">
-    <option value="">All Employees</option>
-    <option v-for="employee in employees" :key="employee.id" :value="employee.id">
-      {{ employee.name }}
-    </option>
-  </select>
-</div>
-
+      <!-- Employee Dropdown -->
+      <div id="filter-options">
+        <select id="employee" v-model="selectedEmployee">
+          <option value="">All Employees</option>
+          <option v-for="employee in employees" :key="employee.id" :value="employee.id">
+            {{ employee.name }}
+          </option>
+        </select>
+      </div>
 
       <!-- Create Shift Button -->
       <div id="filter-options">
@@ -178,68 +215,69 @@ const filteredShifts = computed(() => {
           </div>
         </div>
       </div>
-            <div id="schedule-container">
-                <div id="schedule-time">
-                    <div>7 AM </div>
-                    <div>8 AM </div>
-                    <div>9 AM</div>
-                    <div>10 AM</div>
-                    <div>11 AM</div>
-                    <div>12 PM</div>
-                    <div>1 PM</div>
-                    <div>2 PM</div>
-                    <div>3 PM</div>
-                    <div>4 PM</div>
-                    <div>5 PM</div>
-                    <div>6 PM</div>
-                    <div>7 PM</div>
-                    <div>8 PM</div>
-                    <div>9 PM</div>
-                    <div>10 PM</div>
-                    <div>11 PM</div>
-                    <div>12 AM</div>
-                    <div>1 AM</div>
-                    <div>2 AM</div>
-                    <div>3 AM</div>
-                    <div>4 AM</div>
-                    <div>5 AM</div>
-                    <div>6 AM</div>                    
-                </div>
-                <div id="schedule-day">Mon</div>
-                <div id="schedule-day">Tue</div>
-                <div id="schedule-day">Wed</div>
-                <div id="schedule-day">Thu</div>
-                <div id="schedule-day">Fri</div>
-                <div id="schedule-day">Sat</div>
-                <div id="schedule-day">Sun</div>
-            </div>
+      <div id="schedule-container">
+        <div id="schedule-time">
+          <div>7 AM </div>
+          <div>8 AM </div>
+          <div>9 AM</div>
+          <div>10 AM</div>
+          <div>11 AM</div>
+          <div>12 PM</div>
+          <div>1 PM</div>
+          <div>2 PM</div>
+          <div>3 PM</div>
+          <div>4 PM</div>
+          <div>5 PM</div>
+          <div>6 PM</div>
+          <div>7 PM</div>
+          <div>8 PM</div>
+          <div>9 PM</div>
+          <div>10 PM</div>
+          <div>11 PM</div>
+          <div>12 AM</div>
+          <div>1 AM</div>
+          <div>2 AM</div>
+          <div>3 AM</div>
+          <div>4 AM</div>
+          <div>5 AM</div>
+          <div>6 AM</div>                    
         </div>
-
+        <div id="schedule-day">Mon</div>
+        <div id="schedule-day">Tue</div>
+        <div id="schedule-day">Wed</div>
+        <div id="schedule-day">Thu</div>
+        <div id="schedule-day">Fri</div>
+        <div id="schedule-day">Sat</div>
+        <div id="schedule-day">Sun</div>
+      </div>
     </div>
-    
-
+  </div>
 </template>
 
 
 
 
-<style scoped>
-    .create-shift-btn {
-        background-color: var(--second); /* Customize the background */
-        color: var(--text1); /* Text color */
-        border: none;
-        padding: 10px 20px;
-        font-size: 16px;
-        border-radius: 5px;
-        cursor: pointer;
-        width: 100%; /* Ensures full width */
-        text-align: center;
-    }
 
-    .create-shift-btn:hover {
-        background-color: var(--first); /* Change color on hover */
-        color: var(--third);
-    }
+<style scoped>
+  .create-shift-btn {
+    background-color: #1F4691;
+    border: none;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    border-radius: 15px;
+    color: #f0f0f0;
+    padding: 10px 50px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-family: 'Poppins';
+    cursor: pointer;
+  }
+
+  .create-shift-btn:hover {
+    background-color: #17346d;
+  }
 
     /* Styling for filter options */
     #filters {

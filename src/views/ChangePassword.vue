@@ -103,4 +103,8 @@ defineOptions({
         font-family: 'Poppins';
         cursor: pointer;
     }
+
+    #set-password:hover {
+        background-color: #17346d;
+    }
 </style>
