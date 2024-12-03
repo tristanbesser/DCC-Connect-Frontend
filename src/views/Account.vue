@@ -37,9 +37,7 @@ onMounted(() => {
 
 // Sign out function
 const signOut = () => {
-  // Handle sign out logic, e.g., clearing tokens and redirecting to login page
-  localStorage.removeItem('authToken'); // Assuming you're using localStorage for authentication token
-  router.push('/'); // Redirect to the login page
+  router.push({ path: '/', query: { message: 'signed_out' } }); // Redirect to the login page with a query parameter
 };
 </script>
 

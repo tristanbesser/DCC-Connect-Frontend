@@ -3,7 +3,7 @@
     <ul>
       <li><a @click="goToAccount"><img src="../../public/Profile.png"></a></li>
       <li><a @click="goToInfo"><img src="../../public/Info.png">Info</a></li>
-      <li><a @click="goToTimeOff"><img src="../../public/TimeOff.png">Time Off</a></li>
+      <li><a @click="goToTimeOff"><img src="../../public/TimeOff.png">Coverage</a></li>
       <li><a @click="goToSchedule"><img src="../../public/Schedule.png">Schedule</a></li>
       
       <!-- Conditionally show 'Registration' for managers -->

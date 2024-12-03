@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
 import axios from '../config/axios.js';
 
@@ -18,6 +17,7 @@ const shift = ref({
   employeeID: "", // Add employeeID to the shift object
 });
 
+const successMessage = ref<string | null>(null);  // Add reactive state for success message
 
 // Method to fetch employees
 const getEmployees = async () => {
@@ -110,6 +110,8 @@ const handleCreateAndAssignShift = async () => {
 
     console.log("Shift assigned successfully:", assignResponse.data);
 
+    successMessage.value = "Shift created and assigned successfully!";  // Update success message
+
   } catch (error) {
     console.error("Error in creating or assigning shift:", error);
     alert("Failed to create or assign shift. Check the console for details.");
@@ -160,6 +162,7 @@ const handleCreateAndAssignShift = async () => {
       <div id="submit-button-container">
         <button @click.prevent="handleCreateAndAssignShift" class="action-button">Create and Assign</button>
       </div>
+      <div v-if="successMessage" class="success-message">{{ successMessage }}</div> <!-- Conditionally render success message -->
     </div>
   </div>
 </template>
@@ -246,4 +249,12 @@ select {
     background-color: var(--first);
     color: var(--background);
 }
+
+.success-message {  /* Style for success message */
+  margin-top: 15px;
+  color: green;
+  font-family: 'Poppins';
+  font-size: 14px;
+}
 </style>
+
