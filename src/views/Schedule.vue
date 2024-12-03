@@ -169,7 +169,7 @@ const filteredShifts = computed(() => {
   let filtered = shifts.value;
 
   // Filter by location
-  if (selectedLocation.value) {
+  if (selectedLocation.value && userRole.value!="Employee") {
     filtered = filtered.filter(shift => shift.location === selectedLocation.value);
   }
 
