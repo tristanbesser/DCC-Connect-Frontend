@@ -1,217 +1,356 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '@/components/Navbar.vue';
+import axios from '../config/axios.js';
+
+import type Shift from "@/models/shift.js";
+import { CoverageOptions, coverageTypeToString } from "@/models/coverageRequests/coverageOptions.js"
+import type CoverageRequest from '@/models/coverageRequests/coverageRequest.js';
+import type CoverageRequestQueryParams from '@/models/coverageRequests/coverageRequestQueryParams.js';
+import { formatAddress, type Address } from '@/models/address.js';
+import type User from '@/models/user.js';
+import type Location from '@/models/location.js';
+import type CoverageRequestDetail from '@/models/coverageRequests/CoverageRequestDetail.js';
+import type ShiftLocation from '@/models/shiftLocation.js';
 
 const router = useRouter();
 
 defineOptions({
   name: 'time-off',
 });
+const COVERAGE_OPTIONS = CoverageOptions;
+
+// State variables
+const TRADES_AND_PICKUPS = "Trades & Pickups"
+const MY_COVERAGE = "My Coverage Requests"
+const MANAGER_APPROVAL = "Manager Approval"
+const activeUser = ref<User>();
+const myCoverageRequests = ref<CoverageRequestDetail[]>([]);
+const otherEmployeesCoverageRequests = ref<CoverageRequestDetail[]>([]);
+const myTimeOffRequests = ref([]);
+
+const fetchActiveUser = async () => {
+  try {
+    const response = await axios.get('user/signedin', { withCredentials: true });
+    activeUser.value = response.data;
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error fetching active user:', error);
+    //Consider redirecting to sign in page on 401 here
+  }
+};
+const fetchTimeOff = async () => {
+  try {
+    const response = await axios.get('timeoff/get', { withCredentials: true });
+    myTimeOffRequests.value = response.data;
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error fetching time off:', error);
+    //Consider redirecting to sign in page on 401 here
+  }
+};
+const fetchCoverageRequests = async (params: CoverageRequestQueryParams, target: any) => {
+  try {
+    const response = await axios.get('coverage/get/detailed', {
+      withCredentials: true,
+      params: params,
+    });
+    target.value = response.data;
+    console.log(response.data)
+  } catch (error) {
+    console.error('Error fetching coverage requests:', error);
+  }
+};
+
+onMounted(async () => {
+  console.log("mount");
+  await fetchActiveUser();
+  let startDate = new Date(Date.now());
+  let endDate = new Date(startDate.getDay() + 31);
+  
+  // Fetch coverage requests that the active user has requested to cover (these should show in My Coverage Requests)
+  fetchCoverageRequests(
+    { employeeID: activeUser.value?.id, startAvailability: startDate, endAvailability: endDate }, 
+    myCoverageRequests
+  );
+  
+  // Fetch coverage requests that other employees have requested (these should show in Trades & Pickups)
+  fetchCoverageRequests(
+    { requiredRole: activeUser.value?.employeeRole }, 
+    otherEmployeesCoverageRequests
+  );
+
+  console.log(myCoverageRequests);
+  console.log(otherEmployeesCoverageRequests.value);
+  fetchTimeOff();
+});
+
+
 
 const goToRequest = () => {
   router.push('./request');
 };
 
-const takeShift = (offer) => {
-  // Find the index of the offer in the array
-  const index = offers.value.findIndex(o => o === offer);
-  
-  // Remove the offer if it exists
-  if (index !== -1) {
-    offers.value.splice(index, 1);
-  }
-};
-const request_type = ref(['My time off requests', 'My offered shifts', 'Available shifts']);
-const selectedType = ref('My time off requests');
+const request_type = ref([MY_COVERAGE, TRADES_AND_PICKUPS]);
+const selectedType = ref(MY_COVERAGE);
 const currentDate = new Date();
-
+type LocationDictionary = {
+  [key: string]: {
+    streetAddress: Address;
+    patientName?: string | null;
+  };
+}
+const locationsToDict = (shiftLocations: ShiftLocation[]) => {
+  const reducer = (accumulator: LocationDictionary, location: ShiftLocation) => { const { id, ...rest } = location; accumulator[id] = rest; return accumulator; }
+  return shiftLocations.reduce(reducer, {});
+}
+const locations = ref<LocationDictionary>({})
 const shifts = ref([]);
 const requests = ref([]);
+/*Populate this to the result of this request.
+axios.get(apiurl3+"coverage/get",{
+  params:
+  {
+    employeeID:"POPULATE THIS BASED ON ACTIVE"
+    }
+    })*/
+const shiftTrades = ref([]);
+const availableShifts = ref([]);
 const offers = ref([]);
-
-class Shift {
-    constructor(start_time, day, location, duration){
-        this.start_time = start_time;
-        this.day = day;
-        this.location = location;
-        this.duration = duration;
+const takeShift = (offer) => {
+  // Find the index of the offer in the array
+  const index = availableShifts.value.findIndex(o => o === offer);
+  console.log(offer.id)
+  axios.put("employees/pickup", {
+    openShiftID: offer.id,
+    employeeID: activeUser.value?.id
+  }).then(response => {
+    if (index !== -1) {
+      availableShifts.value.splice(index, 1);
     }
-}
-class request {
-    constructor(start_date, end_date, reason){
-        this.start_date = start_date;
-        this.end_date = end_date;
-        this.reason = reason;
-    }
-}
-class shiftOffer {
-    constructor(owner, shift){
-        this.owner = owner;
-        this.shift = shift;
-    }
-}
+    alert("Successfully took shift.")
+  }).catch(error => {
+    console.log(index)
+    console.log(error)
+    alert("Failed to pick up shift.")
+  })
+  // Remove the offer if it exists
 
-shifts.value.push(new Shift(7, 0, 'Location 1', 4));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
-requests.value.push(new request('2024-11-17', '2024-11-17', "i hate my parents"));
+};
 
-offers.value.push(new shiftOffer('Jamie', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('self', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('self', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('Josh', new Shift(7, 0, 'Location 1', 4)));
-offers.value.push(new shiftOffer('Angela', new Shift(7, 0, 'Location 1', 4)));
+axios.get( "shifts/get", {
+  params: {
+    openShiftsOnly: true,
+    requiredRole:activeUser.value?.employeeRole
+  }
+}).then(response => {
+  console.log(response.data)
+  availableShifts.value = response.data
+}).catch((err)=>{console.log(err)})
+axios.get( "location/get", { withCredentials: true }).then((response: { data: ShiftLocation[]; }) => {
+  console.log(response.data)
+  locations.value = locationsToDict(response.data);
+})
 
+function isManagerApprovedToString(isApproved: null | boolean) {
+  if (isApproved == null) {
+    return "Awaiting action from manager."
+  }
+  return isApproved ? "Approved" : "Denied";
+}
 
 function getListStyle(request) {
-    const requestStartDate = new Date(request.start_date); // Convert start_date to a Date object
-    if (requestStartDate < currentDate) {
-        return {
-            width: `95%`,
-            minHeight: '60px',
-            backgroundColor: 'var(--background)', // Apply the current color for the background
-            color: 'var(--text1)',         // Text color
-            display: 'flex',               // Center content
-            justifyContent: 'center',      // Horizontally center
-            alignItems: 'center',          // Vertically center
-            borderRadius: '10px',          // Rounded corners
-            margin: '2px',                 // Add spacing
-            justifyContent:'space-between',
-            padding: '5px',
-        };
-    } else {
-        return {
-            display: 'none',
-        };
-    }
+  const requestStartDate = new Date(request.start_date); // Convert start_date to a Date object
+  if (requestStartDate < currentDate) {
+    return {
+      width: `95%`,
+      minHeight: '60px',
+      backgroundColor: 'var(--background)', // Apply the current color for the background
+      color: 'var(--text1)',         // Text color
+      display: 'flex',               // Center content
+      justifyContent: 'center',      // Horizontally center
+      alignItems: 'center',          // Vertically center
+      borderRadius: '10px',          // Rounded corners
+      margin: '2px',                 // Add spacing
+      justifyContent: 'space-between',
+      padding: '5px',
+    };
+  } else {
+    return {
+      display: 'none',
+    };
+  }
 }
+
 function getOfferStyle(request) {
-    if (request.owner == 'self') {
-        return {
-            width: `95%`,
-            minHeight: '60px',
-            backgroundColor: 'var(--background)', // Apply the current color for the background
-            color: 'var(--text1)',         // Text color
-            display: 'flex',               // Center content
-            justifyContent: 'center',      // Horizontally center
-            alignItems: 'center',          // Vertically center
-            borderRadius: '10px',          // Rounded corners
-            margin: '2px',                 // Add spacing
-            justifyContent:'space-between',
-            padding: '5px',
-        };
-    } else {
-        return {
-            display: 'none',
-        };
-    }
+  if (request.owner == 'self') {
+    return {
+      width: `95%`,
+      minHeight: '60px',
+      backgroundColor: 'var(--background)', // Apply the current color for the background
+      color: 'var(--text1)',         // Text color
+      display: 'flex',               // Center content
+      justifyContent: 'center',      // Horizontally center
+      alignItems: 'center',          // Vertically center
+      borderRadius: '10px',          // Rounded corners
+      margin: '2px',                 // Add spacing
+      justifyContent: 'space-between',
+      padding: '5px',
+    };
+  } else {
+    return {
+      display: 'none',
+    };
+  }
 }
 function getOtherOfferedStyle(request) {
-    if (request.owner != 'self') {
-        return {
-            width: `95%`,
-            minHeight: '60px',
-            backgroundColor: 'var(--background)', // Apply the current color for the background
-            color: 'var(--text1)',         // Text color
-            display: 'flex',               // Center content
-            justifyContent: 'center',      // Horizontally center
-            alignItems: 'center',          // Vertically center
-            borderRadius: '10px',          // Rounded corners
-            margin: '2px',                 // Add spacing
-            justifyContent:'space-between',
-            padding: '5px',
-        };
-    } else {
-        return {
-            display: 'none',
-        };
-    }
+  if (request.owner != 'self') {
+    return {
+      width: `95%`,
+      minHeight: '60px',
+      backgroundColor: 'var(--background)', // Apply the current color for the background
+      color: 'var(--text1)',         // Text color
+      display: 'flex',               // Center content
+      justifyContent: 'center',      // Horizontally center
+      alignItems: 'center',          // Vertically center
+      borderRadius: '10px',          // Rounded corners
+      margin: '5px',                 // Add spacing
+      justifyContent: 'space-between',
+      padding: '5px',
+    };
+  } else {
+    return {
+      display: 'none',
+    };
+  }
+}
+
+// Add this method to format the date and time
+function formatDateTime(dateTime: string): string {
+  const options = {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  };
+  return new Date(dateTime).toLocaleString('en-US', options);
 }
 
 
 </script>
 
+
 <template>
   <Navbar></Navbar>
-  
+
   <div id="filters">
     <h1>Schedule Change Requests</h1>
-    <div id="request">
-      <button @click="goToRequest">Make a Request...</button>
-    </div>
     <!-- Row of clickable options -->
     <div id="options">
-      <div
-        v-for="option in request_type"
-        :key="option"
-        :class="['option-item', { selected: selectedType === option }]"
-        @click="selectedType = option"
-      >
+      <div v-for="option in request_type" :key="option" :class="['option-item', { selected: selectedType === option }]"
+        @click="selectedType = option">
         {{ option }}
       </div>
+      <div v-if="activeUser?.employeeRole === 'Manager'" :key="MANAGER_APPROVAL" :class="['option-item', { selected: selectedType === MANAGER_APPROVAL }]"
+        @click="selectedType = MANAGER_APPROVAL">
+        {{ MANAGER_APPROVAL }}
+      </div>
     </div>
-    
+
   </div>
-<div v-if="selectedType == 'My time off requests'">
-    <div v-for="(request, index) in requests" :key="index" :style="getListStyle(request)">
-        <div>{{request.start_date}} - {{ request.end_date }}</div>
-        <div>{{ request.reason }}</div>
+<!-- Display My Coverage Requests -->
+<div v-if="selectedType == MY_COVERAGE">
+  <div id="available-shifts">
+    <div class="info-cards" v-if="myCoverageRequests.length === 0" style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
+      No active requests.
     </div>
-</div>
-<div v-if="selectedType == 'My offered shifts'">
-    <div v-for="(request, index) in offers" :key="index" :style="getOfferStyle(request)">
-        <div>{{ request.shift.start_time }} - {{ request.shift.duration +  request.shift.start_time}}</div>
-        <div>{{ request.shift.location }}</div>
-        <div>{{ request.shift.start_time }}</div>
-        <div>{{ request.owner }}</div>
+    <div class="info-cards" v-for="(request, index) in myCoverageRequests" :key="index" :style="getOtherOfferedStyle(request)">
+      <div style="width: 300px;">{{ formatAddress(locations[request.shift.location].streetAddress) }}</div>
+      <div>{{ new Date(request.shift.shiftPeriod.start).toLocaleDateString() }} </div>
+      <div>{{ new Date(request.shift.shiftPeriod.end).toLocaleDateString() }}</div>
+      <div>{{ coverageTypeToString(request.coverageRequest.coverageType) }}</div>
+      <button @click="takeShift(request)">Take Shift</button>
     </div>
-</div>
-<div v-if="selectedType == 'Available shifts'">
-    <div v-for="(request, index) in offers" :key="index" :style="getOtherOfferedStyle(request)">
-        <div>{{ request.shift.start_time }} - {{ request.shift.duration +  request.shift.start_time}}</div>
-        <div>{{ request.shift.location }}</div>
-        <div>{{ request.shift.start_time }}</div>
-        <div>{{ request.owner }}</div>
-        <button @click="takeShift(request)">Take Shift</button>
-    </div>
+  </div>
 </div>
 
-                
+<!-- Display Trades & Pickups -->
+<div v-if="selectedType == TRADES_AND_PICKUPS">
+  <div id="available-shifts">
+    <div class="info-cards" v-if="otherEmployeesCoverageRequests.length === 0" style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
+      No trades or pickups available.
+    </div>
+    <div class="info-cards" v-for="(request, index) in otherEmployeesCoverageRequests" :key="index" :style="getOtherOfferedStyle(request)">
+      <div style="width: 300px;">{{ formatAddress(locations[request.shift.location].streetAddress) }}</div>
+      <div>{{ new Date(request.shift.shiftPeriod.start).toLocaleDateString() }} </div>
+      <div>{{ new Date(request.shift.shiftPeriod.end).toLocaleDateString() }}</div>
+      <div>{{ coverageTypeToString(request.coverageRequest.coverageType) }}</div>
+      <button @click="takeShift(request)">Take Shift</button>
+    </div>
+  </div>
+</div>
+
+<div v-if="selectedType == MANAGER_APPROVAL">
+  <div id="available-shifts">
+
+  </div>
+</div>
+
+
+
 </template>
 
 <style scoped>
+#take-shift {
+  display: flex;
+}
+#available-shifts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+    .info-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0px 0px 8px 6px #C0C0C0;
+    margin-bottom: 5px;
+}
+
 #filters {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-around; /* Space out items more evenly */
   align-items: center; /* Center items vertically */
   padding: 15px 20px;
-  background-color: var(--background);
-  color: #4f4f4f;
-  border-bottom: 2px solid var(--text2);
+  background-color: #ffffff;
+  color: var(--first);
+  border-bottom: 2px solid black;
+  margin: 4px;
 }
 
 #options {
   display: flex;
   justify-content: center;
-  gap: 20px; /* Add space between items */
+  gap: 20px;
+  /* Add space between items */
   margin-top: 20px;
 }
 
 #card {
-    height:150px;
-    width: 90%;
-    background-color: var(--third);
-    color: var(--text);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 10px;
-    
-    
+  height: 150px;
+  width: 90%;
+  background-color: var(--third);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
 }
+
 .option-item {
   padding: 10px;
   cursor: pointer;
@@ -225,7 +364,8 @@ function getOtherOfferedStyle(request) {
 
 .option-item.selected {
   font-weight: bold;
-  text-decoration: underline; /* Underline the selected option */
+  text-decoration: underline;
+  /* Underline the selected option */
 }
 
 #request {
@@ -245,5 +385,9 @@ function getOtherOfferedStyle(request) {
 #request button:hover {
   background-color: var(--second);
   color: var(--text2);
+}
+
+div {
+  font-family: 'Poppins';
 }
 </style>

@@ -1,103 +1,170 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
 import Navbar from '@/components/Navbar.vue';
+import axios from '../config/axios.js';
 
-const router = useRouter();
-
-defineOptions({
-    name: 'create-shift',
+// Reactive data
+const employees = ref([]); // Array to store employee data
+const locations = ref([]); // Array to store location data
+const shift = ref({
+  id: "",
+  locationID: "", // Updated to locationID
+  shiftPeriod: {
+    start: "",
+    end: "",
+  },
+  requiredRole: "",  // This will hold the role for the shift
+  employeeID: "", // Add employeeID to the shift object
 });
 
-// Shift Class
-class Shift {
-    constructor(start_time, day, location, duration) {
-        this.start_time = start_time;
-        this.day = day;
-        this.location = location;
-        this.duration = duration;
+const successMessage = ref<string | null>(null);  // Add reactive state for success message
+
+// Method to fetch employees
+const getEmployees = async () => {
+  try {
+    const response = await axios.get('/employees/get', {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Employee data fetched:", response.data);
+    employees.value = response.data; // Assuming the response is an array of employee objects
+  } catch (error) {
+    console.error("Error fetching employee data:", error);
+  }
+};
+
+// Method to fetch locations
+const getLocations = async () => {
+  try {
+    const response = await axios.get('/location/get', {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Location data fetched:", response.data);
+    locations.value = response.data.map((location: any) => ({
+      id: location.id,
+      streetAddress: location.streetAddress.streetAddress,
+    }));
+    
+    // Set default location to the first one available
+    if (locations.value.length > 0) {
+      shift.value.locationID = locations.value[0].id;
     }
-}
+  } catch (error) {
+    console.error("Error fetching location data:", error);
+  }
+};
 
-// Form fields for creating a shift
-const startTime = ref('');
-const day = ref('');
-const location = ref('');
-const duration = ref(0);
-const locations = ref(['Location 1', 'Location 2', 'Location 3', 'Show All']);
+// Call getEmployees and getLocations when the component is mounted
+onMounted(() => {
+  getEmployees();
+  getLocations();
+});
 
-const employees = ref(['Johnson Meijers', 'John Smits', 'Goku', 'Chris']); // Temp list
-const defaultEmployee = ref(employees.value[0]);
+// Handle employee selection and update the shift object
+const handleEmployeeSelect = (employeeID: string) => {
+  const selectedEmployee = employees.value.find(emp => emp.id === employeeID);
+  if (selectedEmployee) {
+    shift.value.requiredRole = selectedEmployee.role || selectedEmployee.employeeRole || "Unknown"; // Set role based on the employee data
+  }
+};
 
-const handleSubmit = () => {
-    const newShift = new Shift(
-        startTime.value,
-        day.value,
-        location.value,
-        parseInt(duration.value, 10)
-    );
+// Create and assign a shift
+const handleCreateAndAssignShift = async () => {
+  try {
+    // Step 1: Create the shift
+    const createResponse = await axios.post('shifts/create', {
+      locationID: shift.value.locationID, // Updated to locationID
+      shiftPeriod: {
+        start: new Date(shift.value.shiftPeriod.start).toISOString(),
+        end: new Date(shift.value.shiftPeriod.end).toISOString(),
+      },
+      requiredRole: shift.value.requiredRole,  // Include the role in the request
+    }, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-    console.log('Created Shift:', newShift);
+    console.log("Shift created successfully:", createResponse.data);
 
-    router.push('./scheduler'); // Navigate after creation
+    // Extract the created shift ID
+    const createdShiftId = createResponse.data.id; // Adjust key as per your API response
+    if (!createdShiftId) {
+      throw new Error("Shift creation failed: No shift ID returned.");
+    }
+
+    // Step 2: Assign the shift to the selected employee
+    const assignResponse = await axios.put('shifts/assign', {
+      shiftIDString: createdShiftId,
+      employeeIDString: shift.value.employeeID,
+    }, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Shift assigned successfully:", assignResponse.data);
+
+    successMessage.value = "Shift created and assigned successfully!";  // Update success message
+
+  } catch (error) {
+    console.error("Error in creating or assigning shift:", error);
+    alert("Failed to create or assign shift. Check the console for details.");
+  }
 };
 </script>
 
-
 <template>
-    <Navbar></Navbar>
-    <div id="create-shift-container">
-        
-        <h1 id="page-title">Create a Shift</h1>
+  <Navbar></Navbar>
+  <div id="create-shift-container">
+    <h1 id="page-title">Create a Shift</h1>
 
-        <div id="form-container">
+    <div id="form-container">
+      <!-- Form for creating a shift -->
+      <div class="form-group">
+        <label for="startTime">Start Time:</label>
+        <input type="datetime-local" id="startTime" v-model="shift.shiftPeriod.start" />
+      </div>
 
-            <div class="form-group">
-                <label for="endDate">Date:</label>
-                <input type="date" id="endDate" v-model="endDate" />
-            </div>
+      <div class="form-group">
+        <label for="endTime">End Time:</label>
+        <input type="datetime-local" id="endTime" v-model="shift.shiftPeriod.end" />
+      </div>
 
-            <div class="form-group">
-                <label for="startTime">Time:</label>
-                <input type="time" id="startTime" v-model="startTime" />
-            </div>
+      <div class="form-group">
+        <label for="location">Location:</label>
+        <select id="location" v-model="shift.locationID" required>
+          <option value="" disabled>Select Location</option>
+          <option v-for="location in locations" :key="location.id" :value="location.id">
+            {{ location.streetAddress }}
+          </option>
+        </select>
+      </div>
 
-            
+      <div class="form-group">
+        <label for="employee">Employee:</label>
+        <select v-model="shift.employeeID" id="employee" @change="handleEmployeeSelect(shift.employeeID)" required>
+          <option value="" disabled>Select Employee</option>
+          <!-- Ensure you match the employee structure -->
+          <option v-for="employee in employees" 
+                  :key="employee.id" 
+                  :value="employee.id">
+            {{ employee.firstName }} {{ employee.lastName }}
+          </option>
+        </select>
+      </div>
 
-            <div class="form-group">
-                <label for="location">Location:</label>
-                <select id="location" v-model="location">
-                    <option v-for="loc in locations" :key="loc" :value="loc">
-                        {{ loc }}
-                    </option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="duration">Duration (hours):</label>
-                <input
-                    type="number"
-                    id="duration"
-                    v-model="duration"
-                    placeholder="Enter duration in hours"
-                    min="1"
-                />
-            </div>
-
-            <div class="form-group">
-                <label for="employee">Employee:</label>
-                <select id="employee" v-model="defaultEmployee">
-                    <option v-for="employee in employees" :key="employee" :value="employee">
-                        {{ employee }}
-                    </option>
-                </select>
-            </div>
-
-            <div id="submit-button-container">
-                <button @click="handleSubmit" class="action-button">Submit</button>
-            </div>
-        </div>
+      <div id="submit-button-container">
+        <button @click.prevent="handleCreateAndAssignShift" class="action-button">Create and Assign</button>
+      </div>
+      <div v-if="successMessage" class="success-message">{{ successMessage }}</div> <!-- Conditionally render success message -->
     </div>
+  </div>
 </template>
 
 <style scoped>
@@ -182,4 +249,12 @@ select {
     background-color: var(--first);
     color: var(--background);
 }
+
+.success-message {  /* Style for success message */
+  margin-top: 15px;
+  color: green;
+  font-family: 'Poppins';
+  font-size: 14px;
+}
 </style>
+

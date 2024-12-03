@@ -1,43 +1,82 @@
 <template>
-    <div id="navbar">
-      <ul>
-        <li><a @click="goToAccount"><img src="../../public/Profile.png"></a></li>
-        <li><a @click="goToInfo"><img src="../../public/Info.png">Info</a></li>
-        <li><a @click="goToTimeOff"><img src="../../public/TimeOff.png">Time Off</a></li>
-        <li><a @click="goToSchedule"><img src="../../public/Schedule.png">Schedule</a></li>
-      </ul>
-    </div>
-  </template>
-  
-  <script>
-  import { useRouter } from 'vue-router'; // Import Vue Router
+  <div id="navbar">
+    <ul>
+      <li><a @click="goToAccount"><img src="../../public/Profile.png"></a></li>
+      <li><a @click="goToInfo"><img src="../../public/Info.png">Info</a></li>
+      <li><a @click="goToTimeOff"><img src="../../public/TimeOff.png">Coverage</a></li>
+      <li><a @click="goToSchedule"><img src="../../public/Schedule.png">Schedule</a></li>
+      
+      <!-- Conditionally show 'Registration' for managers -->
+      <li v-if="role === 'Manager'">
+        <a @click="goToRegistration">
+          <img src="../../public/RegistrationIcon.png">Registration
+        </a>
+      </li>
+    </ul>
+  </div>
+</template>
 
-  export default {
-    name: 'Navbar',
-    setup() {
-      const router = useRouter();
-      const goToSchedule = () => {
-        router.push('./scheduler'); // Push to the route
-      };
-      const goToTimeOff = () => {
-        router.push('./time-off'); // Push to the route
-      };
-      const goToAccount = () => {
-        router.push('./account'); // Push to the route
-      };
-      const goToInfo = () => {
-        router.push('./info'); // Push to the route
-      };
-  
-      return {
-        goToSchedule,
-        goToTimeOff,
-        goToAccount,
-        goToInfo,
-      };
-    },
-  };
-  </script>
+<script>
+import { useRouter } from 'vue-router';
+import { ref } from 'vue';
+import axios from '../config/axios.js';  // Assuming axios is set up
+
+export default {
+  name: 'Navbar',
+  setup() {
+    const router = useRouter();
+    const role = ref();  // Default role is 'employee'
+    
+    // Fetch the signed-in user data and set the role
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get('/user/signedin', {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,  // If the session cookie is required
+        });
+
+        if (response.status === 200) {
+          role.value = response.data.employeeRole;  // Assuming the role is returned as 'role' in the response
+        } else {
+          console.error("Failed to fetch user data");
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    // Call the function to fetch user data
+    fetchUserData();
+
+    const goToSchedule = () => {
+      router.push('./scheduler');
+    };
+    const goToTimeOff = () => {
+      router.push('./time-off');
+    };
+    const goToAccount = () => {
+      router.push('./account');
+    };
+    const goToInfo = () => {
+      router.push('./info');
+    };
+    const goToRegistration = () => {
+      router.push('./registration');  // Navigate to the registration page for managers
+    };
+
+    return {
+      goToSchedule,
+      goToTimeOff,
+      goToAccount,
+      goToInfo,
+      goToRegistration,
+      role,  // Bind the role to the template
+    };
+  },
+};
+</script>
   
 <style scoped>
 p {
@@ -90,32 +129,3 @@ li {
 
 
 </style>
-<!-- const data = {for use in the integration of backend and frontend, very basic commands for refference later!!
-  shiftPeriod: {
-    start: "2024-11-15T19:50:04.613Z",
-    end: "2024-11-15T19:50:04.613Z"
-  },
-  location: "string",
-  role: 0,
-  employeeID: "string"
-};
-
-fetch('http://localhost:5207/shift/create/', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify(data)
-})
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    return response.json();
-  })
-  .then(data => {
-    console.log('Success:', data);
-  })
-  .catch(error => {
-    console.error('Error:', error);
-  }); -->
