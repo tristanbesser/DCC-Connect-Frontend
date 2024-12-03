@@ -50,16 +50,16 @@ const fetchTimeOff = async () => {
     //Consider redirecting to sign in page on 401 here
   }
 };
-const fetchCoverageRequests = async (params: CoverageRequestQueryParams, target: any) => {
+const fetchCoverageRequests = async (params: CoverageRequestQueryParams): Promise<CoverageRequestDetail[]> => {
   try {
     const response = await axios.get('coverage/get/detailed', {
       withCredentials: true,
       params: params,
     });
-    target.value = response.data;
-    console.log(response.data)
+    return response.data;
   } catch (error) {
     console.error('Error fetching coverage requests:', error);
+    return [];
   }
 };
 
@@ -67,22 +67,20 @@ onMounted(async () => {
   console.log("mount");
   await fetchActiveUser();
   let startDate = new Date(Date.now());
-  let endDate = new Date(startDate.getDay() + 31);
-  
+  let endDate = new Date(startDate.getDay() + 1000);
+  var myCoverage: CoverageRequestDetail[]
+  var queryParams:CoverageRequestQueryParams={};
+  if(activeUser.value?.employeeRole==="Employee"){
+    queryParams={ requiredRole: activeUser.value?.employeeRole }
+  }
   // Fetch coverage requests that the active user has requested to cover (these should show in My Coverage Requests)
   fetchCoverageRequests(
-    { employeeID: activeUser.value?.id, startAvailability: startDate, endAvailability: endDate }, 
-    myCoverageRequests
-  );
+    queryParams ,
+  ).then(result => {
+    myCoverageRequests.value = result.filter(detail => detail.shift.employeeID === activeUser.value?.id)
+    otherEmployeesCoverageRequests.value = result.filter(detail => detail.shift.employeeID !== activeUser.value?.id)
+  });
   
-  // Fetch coverage requests that other employees have requested (these should show in Trades & Pickups)
-  fetchCoverageRequests(
-    { requiredRole: activeUser.value?.employeeRole }, 
-    otherEmployeesCoverageRequests
-  );
-
-  console.log(myCoverageRequests);
-  console.log(otherEmployeesCoverageRequests.value);
   fetchTimeOff();
 });
 
@@ -139,16 +137,16 @@ const takeShift = (offer) => {
 
 };
 
-axios.get( "shifts/get", {
+axios.get("shifts/get", {
   params: {
     openShiftsOnly: true,
-    requiredRole:activeUser.value?.employeeRole
+    requiredRole: activeUser.value?.employeeRole
   }
 }).then(response => {
   console.log(response.data)
   availableShifts.value = response.data
-}).catch((err)=>{console.log(err)})
-axios.get( "location/get", { withCredentials: true }).then((response: { data: ShiftLocation[]; }) => {
+}).catch((err) => { console.log(err) })
+axios.get("location/get", { withCredentials: true }).then((response: { data: ShiftLocation[]; }) => {
   console.log(response.data)
   locations.value = locationsToDict(response.data);
 })
@@ -250,50 +248,54 @@ function formatDateTime(dateTime: string): string {
         @click="selectedType = option">
         {{ option }}
       </div>
-      <div v-if="activeUser?.employeeRole === 'Manager'" :key="MANAGER_APPROVAL" :class="['option-item', { selected: selectedType === MANAGER_APPROVAL }]"
+      <div v-if="activeUser?.employeeRole === 'Manager'" :key="MANAGER_APPROVAL"
+        :class="['option-item', { selected: selectedType === MANAGER_APPROVAL }]"
         @click="selectedType = MANAGER_APPROVAL">
         {{ MANAGER_APPROVAL }}
       </div>
     </div>
 
   </div>
-<!-- Display My Coverage Requests -->
-<div v-if="selectedType == MY_COVERAGE">
-  <div id="available-shifts">
-    <div class="info-cards" v-if="myCoverageRequests.length === 0" style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
-      No active requests.
-    </div>
-    <div class="info-cards" v-for="(request, index) in myCoverageRequests" :key="index" :style="getOtherOfferedStyle(request)">
-      <div style="width: 300px;">{{ formatAddress(locations[request.shift.location].streetAddress) }}</div>
-      <div>{{ new Date(request.shift.shiftPeriod.start).toLocaleDateString() }} </div>
-      <div>{{ new Date(request.shift.shiftPeriod.end).toLocaleDateString() }}</div>
-      <div>{{ coverageTypeToString(request.coverageRequest.coverageType) }}</div>
-      <button @click="takeShift(request)">Take Shift</button>
-    </div>
-  </div>
-</div>
-
-<!-- Display Trades & Pickups -->
-<div v-if="selectedType == TRADES_AND_PICKUPS">
-  <div id="available-shifts">
-    <div class="info-cards" v-if="otherEmployeesCoverageRequests.length === 0" style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
-      No trades or pickups available.
-    </div>
-    <div class="info-cards" v-for="(request, index) in otherEmployeesCoverageRequests" :key="index" :style="getOtherOfferedStyle(request)">
-      <div style="width: 300px;">{{ formatAddress(locations[request.shift.location].streetAddress) }}</div>
-      <div>{{ new Date(request.shift.shiftPeriod.start).toLocaleDateString() }} </div>
-      <div>{{ new Date(request.shift.shiftPeriod.end).toLocaleDateString() }}</div>
-      <div>{{ coverageTypeToString(request.coverageRequest.coverageType) }}</div>
-      <button @click="takeShift(request)">Take Shift</button>
+  <!-- Display My Coverage Requests -->
+  <div v-if="selectedType == MY_COVERAGE">
+    <div id="available-shifts">
+      <div class="info-cards" v-if="myCoverageRequests.length === 0"
+        style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
+        No active requests.
+      </div>
+      <div class="info-cards" v-for="(request, index) in myCoverageRequests" :key="index"
+        :style="getOtherOfferedStyle(request)">
+        <div style="width: 300px;">{{ formatAddress(locations[request.shift.location].streetAddress) }}</div>
+        <div>{{ new Date(request.shift.shiftPeriod.start).toLocaleDateString() }} </div>
+        <div>{{ new Date(request.shift.shiftPeriod.end).toLocaleDateString() }}</div>
+        <div>Type:&nbsp;{{ coverageTypeToString(request.coverageRequest.coverageType) }}</div>
+      </div>
     </div>
   </div>
-</div>
 
-<div v-if="selectedType == MANAGER_APPROVAL">
-  <div id="available-shifts">
-
+  <!-- Display Trades & Pickups -->
+  <div v-if="selectedType == TRADES_AND_PICKUPS">
+    <div id="available-shifts">
+      <div class="info-cards" v-if="otherEmployeesCoverageRequests.length === 0"
+        style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
+        No trades or pickups available.
+      </div>
+      <div class="info-cards" v-for="(request, index) in otherEmployeesCoverageRequests" :key="index"
+        :style="getOtherOfferedStyle(request)">
+        <div style="width: 300px;">{{ formatAddress(locations[request.shift.location].streetAddress) }}</div>
+        <div>{{ new Date(request.shift.shiftPeriod.start).toLocaleDateString() }} </div>
+        <div>{{ new Date(request.shift.shiftPeriod.end).toLocaleDateString() }}</div>
+        <div>{{ coverageTypeToString(request.coverageRequest.coverageType) }}</div>
+        <button @click="takeShift(request)">Take Shift</button>
+      </div>
+    </div>
   </div>
-</div>
+
+  <div v-if="selectedType == MANAGER_APPROVAL">
+    <div id="available-shifts">
+
+    </div>
+  </div>
 
 
 
@@ -303,28 +305,32 @@ function formatDateTime(dateTime: string): string {
 #take-shift {
   display: flex;
 }
+
 #available-shifts {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
 }
-    .info-cards {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0px 0px 8px 6px #C0C0C0;
-    margin-bottom: 5px;
+
+.info-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0px 0px 8px 6px #C0C0C0;
+  margin-bottom: 5px;
 }
 
 #filters {
   display: flex;
   flex-direction: column;
-  justify-content: space-around; /* Space out items more evenly */
-  align-items: center; /* Center items vertically */
+  justify-content: space-around;
+  /* Space out items more evenly */
+  align-items: center;
+  /* Center items vertically */
   padding: 15px 20px;
   background-color: #ffffff;
   color: var(--first);

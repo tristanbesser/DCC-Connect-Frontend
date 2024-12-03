@@ -226,7 +226,7 @@ const handleSubmit = async (coverageOption: CoverageOptions, shift: shift) => {
   <div id='scheduler'>
     <div style="text-align: center; font-size: 18px; margin-top: 10px;">Options</div>
     <div id='filters'>
-      <div id="filter-options" v-if="userRole === 'Manager'">
+      <div id="filter-options" v-if="userRole === 'Manager'||userRole === 'Admin'">
         <!-- Location Dropdown -->
         <select id="location" v-model="selectedLocation">
           <option v-for="location in locations" :key="location.id" :value="location.streetAddress">
@@ -245,7 +245,7 @@ const handleSubmit = async (coverageOption: CoverageOptions, shift: shift) => {
         </select>
       </div>
 
-      <div id="filter-options" v-if="userRole === 'Manager'">
+      <div id="filter-options" v-if="userRole === 'Manager'||userRole === 'Admin'">
         <!-- Create Shift Button -->
         <button class="create-shift-btn" @click="goToCreateShifts">
           Create Shifts

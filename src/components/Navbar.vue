@@ -7,7 +7,7 @@
       <li><a @click="goToSchedule"><img src="../../public/Schedule.png">Schedule</a></li>
       
       <!-- Conditionally show 'Registration' for managers -->
-      <li v-if="role === 'Manager'">
+      <li v-if="role === 'Manager'||role=='Admin'">
         <a @click="goToRegistration">
           <img src="../../public/RegistrationIcon.png">Registration
         </a>
