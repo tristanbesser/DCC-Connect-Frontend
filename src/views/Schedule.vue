@@ -27,6 +27,24 @@ const locations = ref<{ id: string, streetAddress: string }[]>([]); // Store loc
 // Days of the week for mapping
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+// Reactive variables
+const userRole = ref<string>('');  // Default role is empty
+
+// Fetch user data (role) when the component mounts
+const fetchUserRole = async () => {
+  try {
+    const response = await axios.get('user/signedin', {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    // Set user role from the response
+    userRole.value = response.data.employeeRole; // Assuming the role is returned as 'role'
+    console.log('User role:', userRole.value);
+  } catch (error) {
+    console.error('Error fetching user role:', error);
+  }
+};
 // Fetch employee details by employee ID
 const fetchEmployee = async (employeeID: string) => {
   try {
@@ -95,7 +113,8 @@ const fetchShifts = async () => {
         duration: Math.round((new Date(shift.shiftPeriod.end).getTime() - new Date(shift.shiftPeriod.start).getTime()) / 3600000),
         assignedEmployeeName,
         employeeID: shift.employeeID, // Keep employeeID for filtering
-        location // Use the converted streetAddress
+        location, // Use the converted streetAddress
+        coverageOption: null,
       };
     }));
 
@@ -142,6 +161,7 @@ const fetchLocations = async () => {
 onMounted(() => {
   fetchShifts();
   fetchLocations();
+  fetchUserRole();
 });
 
 // Computed property to filter shifts by location and employee
@@ -164,11 +184,12 @@ const filteredShifts = computed(() => {
 // Handle coverage option selection
 const selectedCoverageOption = ref<CoverageOptions | null>(null); // Track selected coverage option
 
-// Handle coverage option button click
 const handleCoverageOptionClick = async (coverageType: CoverageOptions, shift: shift) => {
-  selectedCoverageOption.value = coverageType;
+  // Set the coverageOption for the selected shift
+  shift.coverageOption = coverageType;
   await handleSubmit(coverageType, shift); // Submit the selected coverage type and shift
 };
+
 
 // Handle form submission
 const handleSubmit = async (coverageOption: CoverageOptions, shift: shift) => {
@@ -194,6 +215,9 @@ const handleSubmit = async (coverageOption: CoverageOptions, shift: shift) => {
     console.error('Error:', error);
   }
 };
+
+
+
 </script>
 
 
@@ -202,7 +226,7 @@ const handleSubmit = async (coverageOption: CoverageOptions, shift: shift) => {
   <div id='scheduler'>
     <div style="text-align: center; font-size: 18px; margin-top: 10px;">Options</div>
     <div id='filters'>
-      <div id="filter-options">
+      <div id="filter-options" v-if="userRole === 'Manager'">
         <!-- Location Dropdown -->
         <select id="location" v-model="selectedLocation">
           <option v-for="location in locations" :key="location.id" :value="location.streetAddress">
@@ -211,8 +235,8 @@ const handleSubmit = async (coverageOption: CoverageOptions, shift: shift) => {
         </select>
       </div>
 
-      <!-- Employee Dropdown -->
       <div id="filter-options">
+        <!-- Employee Dropdown -->
         <select id="employee" v-model="selectedEmployee">
           <option value="">All Employees</option>
           <option v-for="employee in employees" :key="employee.id" :value="employee.id">
@@ -221,8 +245,8 @@ const handleSubmit = async (coverageOption: CoverageOptions, shift: shift) => {
         </select>
       </div>
 
-      <!-- Create Shift Button -->
-      <div id="filter-options">
+      <div id="filter-options" v-if="userRole === 'Manager'">
+        <!-- Create Shift Button -->
         <button class="create-shift-btn" @click="goToCreateShifts">
           Create Shifts
         </button>
@@ -246,13 +270,14 @@ const handleSubmit = async (coverageOption: CoverageOptions, shift: shift) => {
             </div>
 
             <div class="shift-card-footer">
-              <button v-if="!selectedCoverageOption" @click="handleCoverageOptionClick(CoverageOptions.PickupOnly, shift)">
+              <!-- Show buttons only if no coverage option is selected for the specific shift -->
+              <button v-if="shift.coverageOption === null" @click="handleCoverageOptionClick(CoverageOptions.PickupOnly, shift)">
                 Pickup Only
               </button>
-              <button v-if="!selectedCoverageOption" @click="handleCoverageOptionClick(CoverageOptions.TradeOnly, shift)">
+              <button v-if="shift.coverageOption === null" @click="handleCoverageOptionClick(CoverageOptions.TradeOnly, shift)">
                 Trade Only
               </button>
-              <button v-if="!selectedCoverageOption" @click="handleCoverageOptionClick(CoverageOptions.PickupOrTrade, shift)">
+              <button v-if="shift.coverageOption === null" @click="handleCoverageOptionClick(CoverageOptions.PickupOrTrade, shift)">
                 Both
               </button>
             </div>
@@ -262,6 +287,7 @@ const handleSubmit = async (coverageOption: CoverageOptions, shift: shift) => {
     </div>
   </div>
 </template>
+
 
 
 

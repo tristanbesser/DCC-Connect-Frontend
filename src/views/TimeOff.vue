@@ -24,7 +24,7 @@ const COVERAGE_OPTIONS = CoverageOptions;
 // State variables
 const TRADES_AND_PICKUPS = "Trades & Pickups"
 const MY_COVERAGE = "My Coverage Requests"
-const MY_TIME_OFF = "My Time Off"
+const MANAGER_APPROVAL = "Manager Approval"
 const activeUser = ref<User>();
 const myCoverageRequests = ref<CoverageRequestDetail[]>([]);
 const otherEmployeesCoverageRequests = ref<CoverageRequestDetail[]>([]);
@@ -92,7 +92,7 @@ const goToRequest = () => {
   router.push('./request');
 };
 
-const request_type = ref([MY_COVERAGE, MY_TIME_OFF, TRADES_AND_PICKUPS]);
+const request_type = ref([MY_COVERAGE, TRADES_AND_PICKUPS]);
 const selectedType = ref(MY_COVERAGE);
 const currentDate = new Date();
 type LocationDictionary = {
@@ -234,6 +234,8 @@ function formatDateTime(dateTime: string): string {
   };
   return new Date(dateTime).toLocaleString('en-US', options);
 }
+
+
 </script>
 
 
@@ -242,28 +244,18 @@ function formatDateTime(dateTime: string): string {
 
   <div id="filters">
     <h1>Schedule Change Requests</h1>
-    <div id="request">
-      <button @click="goToRequest">Make a Request...</button>
-    </div>
     <!-- Row of clickable options -->
     <div id="options">
       <div v-for="option in request_type" :key="option" :class="['option-item', { selected: selectedType === option }]"
         @click="selectedType = option">
         {{ option }}
       </div>
+      <div v-if="activeUser?.employeeRole === 'Manager'" :key="MANAGER_APPROVAL" :class="['option-item', { selected: selectedType === MANAGER_APPROVAL }]"
+        @click="selectedType = MANAGER_APPROVAL">
+        {{ MANAGER_APPROVAL }}
+      </div>
     </div>
 
-  </div>
-  <div id="available-shifts" v-if="selectedType == MY_TIME_OFF ">
-    <div class="info-cards" v-if="myTimeOffRequests.length === 0"
-      style="text-align: center; font-size: 24px; font-weight: bold; padding: 20px;">
-      No time off requests.
-    </div>
-    <!-- This block displays our time off requests -->
-    <div class="info-cards" style="gap: 15px;" v-for="(request, index) in myTimeOffRequests" :key="index" >
-      <div >Time off request for: {{ new Date(request.timeOffTimeSpan.start).toLocaleDateString() }} - {{ new Date(request.timeOffTimeSpan.end).toLocaleDateString() }}</div>
-      <div style="display: flex;"> Status: {{ isManagerApprovedToString(request.isManagerApproved) }}</div>
-    </div>
   </div>
 <!-- Display My Coverage Requests -->
 <div v-if="selectedType == MY_COVERAGE">
@@ -294,6 +286,12 @@ function formatDateTime(dateTime: string): string {
       <div>{{ coverageTypeToString(request.coverageRequest.coverageType) }}</div>
       <button @click="takeShift(request)">Take Shift</button>
     </div>
+  </div>
+</div>
+
+<div v-if="selectedType == MANAGER_APPROVAL">
+  <div id="available-shifts">
+
   </div>
 </div>
 
