@@ -14,6 +14,7 @@ const router = useRouter();
 // Form input data
 const newPassword = ref('');
 const confirmPassword = ref('');
+const successMessage = ref('');  // Add reactive state for success message
 
 // Function to update password
 function putUpdatePassword() {
@@ -23,14 +24,17 @@ function putUpdatePassword() {
     }
     axios.put("/password/reset", { newPassword: newPassword.value }, { withCredentials: true })
         .then(() => {
-            alert("Successfully changed password.");
-            router.push('./account'); // Navigate to the account page
+            successMessage.value = "Successfully changed password!";  // Update success message
+            setTimeout(() => {
+                router.push('/account'); // Navigate to the account page after a delay
+            }, 5000);  // Adjust delay as needed
         })
         .catch(() => alert("Failed to reset password."));
 }
 </script>
 
 <template>
+    <Navbar></Navbar>
     <div id="holder">
         <RoundedBox id="frame">
             <div id="heading">
@@ -62,6 +66,7 @@ function putUpdatePassword() {
                     <button id="set-password" type="submit">Set Password</button>
                 </div>
             </form>
+            <div v-if="successMessage" class="success-message">{{ successMessage }}</div> <!-- Conditionally render success message -->
         </RoundedBox>
     </div>
 </template>
@@ -142,4 +147,14 @@ label {
 #set-password:hover {
     background-color: #17346d;
 }
+
+.success-message {  /* Style for success message */
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  color: green;
+  font-family: 'Poppins';
+  font-size: 14px;
+}
 </style>
+

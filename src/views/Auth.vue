@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import RoundedBox from '../components/LoginFrame.vue'
 import { useRouter, useRoute } from 'vue-router';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import axios from '../config/axios.js';
 
 const formData = ref({
@@ -10,51 +10,57 @@ const formData = ref({
 })
 
 const errorMessage = ref("")
+const signOutMessage = ref("") // Add a ref to store the sign-out message
+
+const route = useRoute();
+const router = useRouter();
+
+onMounted(() => {
+  if (route.query.message === 'signed_out') {
+    signOutMessage.value = 'You have signed out successfully';
+    setTimeout(() => {
+      signOutMessage.value = '';
+    }, 3000); // Remove the message after 3 seconds
+  }
+});
 
 async function loginProcess() {
-
   const data = {
-        email: formData.value.email, 
-        credential: formData.value.credential
-    }
+    email: formData.value.email, 
+    credential: formData.value.credential
+  }
 
-    try {
-        const response = await axios.post('user/login', data, {
-            headers: {
-                "Content-Type": "application/json"
-                
-            },
-            withCredentials: true
-        })
-        if (response.status === 200) { // Assuming 200 indicates successful login
-          console.log('Response:', response.data); // Debugging log
+  try {
+    const response = await axios.post('user/login', data, {
+      headers: {
+        "Content-Type": "application/json"
+      },
+      withCredentials: true
+    })
+    if (response.status === 200) { // Assuming 200 indicates successful login
+      console.log('Response:', response.data); // Debugging log
 
-          router.push({
-            path: './2FA',
-            query: { email: formData.value.email }
-          });
-          
-        } else {
-            errorMessage.value = response.data.message || "Login failed. Please try again.";
-          }
+      router.push({
+        path: './2FA',
+        query: { email: formData.value.email }
+      });
+      
+    } else {
+      errorMessage.value = response.data.message || "Login failed. Please try again.";
     }
-    catch(err) {
-      errorMessage.value = err.response?.data?.message || "Login failed. Please try again.";
-    }
+  }
+  catch(err) {
+    errorMessage.value = err.response?.data?.message || "Login failed. Please try again.";
+  }
 }
-
-
-
-
-const router = useRouter();
 
 const gotoAccountRecovery = () => {
   router.push('./account-recovery')
 };
-    
-    defineOptions({
-        name: 'Auth',
-    });
+
+defineOptions({
+    name: 'Auth',
+});
 
 const goToSchedule = () => {
   router.push('./scheduler')
@@ -63,38 +69,39 @@ const goToSchedule = () => {
 const goTo2FA = () => {
   router.push('./TwoFA')
 };
-
 </script>
 
+
 <template>
-    <div id="holder">
-      <RoundedBox>
-        <div id = "heading">
-          <h1>DCC Connect</h1>
-          <h2>Welcome to DCC Connect, a simplified scheduling platform for DCC staff.</h2>
+  <div id="holder">
+    <RoundedBox>
+      <div id="heading">
+        <div v-if="signOutMessage" class="sign-out-message">
+          {{ signOutMessage }}!
         </div>
-        <form @submit.prevent="loginProcess">
-          <div id = "email">
-            <label>Email</label>
-              <input v-model="formData.email" type="text" name = "email" placeholder="you@example.com">
-          </div>
-          <div id = "password">
-            <label>Password</label>
-              <input v-model="formData.credential" type="password" name = "password" placeholder="Enter your password">
-          </div>         
-          <div>
-            <button id = "sign-in">Sign In</button>
-          </div>
-          <div v-if="errorMessage" class="error-message">
-            {{ errorMessage }}
-          </div>
-        </form>
-        <div id = "forgot-pass">
-          <a @click="gotoAccountRecovery">Forgot Password</a>
+        <h1>DCC Connect</h1>
+        <h2>Welcome to DCC Connect, a simplified scheduling platform for DCC staff.</h2>
+      </div>
+      <form @submit.prevent="loginProcess">
+        <div id="email">
+          <label>Email</label>
+          <input v-model="formData.email" type="text" name="email" placeholder="you@example.com">
         </div>
-      </RoundedBox>
-    </div>
+        <div id="password">
+          <label>Password</label>
+          <input v-model="formData.credential" type="password" name="password" placeholder="Enter your password">
+        </div>
+        <div>
+          <button id="sign-in">Sign In</button>
+        </div>
+        <div v-if="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+      </form>
+    </RoundedBox>
+  </div>
 </template>
+
  
 <style scoped>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
@@ -236,6 +243,13 @@ const goTo2FA = () => {
 
   .error-message {
   color: red;
+  font-family: 'Poppins', sans-serif;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.sign-out-message {
+  color: green;
   font-family: 'Poppins', sans-serif;
   margin-top: 10px;
   text-align: center;

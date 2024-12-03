@@ -12,6 +12,8 @@ const credential = ref("");
 const errorMessage = ref("");
 
 async function verifyCredential() {
+  // Clear any previous error message before making the API call
+  errorMessage.value = "";
 
   const data = {
     email: email.value,
@@ -27,30 +29,35 @@ async function verifyCredential() {
     });
 
     if (response.status === 200) {
-      router.push('/scheduler'); 
+      router.push('/scheduler'); // Redirect to scheduler page
     } else {
-      errorMessage.value = response.data.message || "Verification failed. Please try again.";
+      // Set an error message if the response status is not 200
+      errorMessage.value = response.data.message || "Invalid verification code. Please try again.";
     }
   } catch (err: unknown) {
-      if (axios.isAxiosError(err)) {
-        errorMessage.value = err.response?.data?.message || "Verification failed. Please try again.";
-      } else if (err instanceof Error) {
-          errorMessage.value = err.message;
-      } else {
-          errorMessage.value = "An unexpected error occurred. Please try again.";
-      }
-    // errorMessage.value = err.response?.data?.message || "Verification failed. Please try again.";
+    // Handle the error if it's an Axios error
+    if (err && (err as any).response) {
+      errorMessage.value = (err as any).response?.data?.message || "Verification failed. Please try again.";
+    } else if (err instanceof Error) {
+      // Handle other types of errors
+      errorMessage.value = err.message;
+    } else {
+      // Handle unexpected errors
+      errorMessage.value = "An unexpected error occurred. Please try again.";
+    }
   }
 }
 </script>
 
 
+
+
 <template>
-    <div id="holder">
+  <div id="holder">
     <RoundedBox>
       <div id="heading">
         <h1>Two-Factor Authentication</h1>
-        <h2>Enter your credential for email: {{ email }}</h2>
+        <h2>Enter the code we sent to this email: {{ email }}</h2>
       </div>
       <form @submit.prevent="verifyCredential">
         <div id="credential">
@@ -60,11 +67,13 @@ async function verifyCredential() {
         <div id="button">
             <button id="verify-button">Verify</button>
         </div>
+        <!-- Display error message if available -->
         <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
       </form>
     </RoundedBox>
-    </div>
-  </template>
+  </div>
+</template>
+
   
 
 <style scoped>
@@ -154,9 +163,9 @@ button:hover {
 }
 
 .error-message {
-  color: red;
-  font-family: 'Poppins', sans-serif;
-  margin-top: 10px;
-  text-align: center;
-}
+    color: red;
+    font-family: 'Poppins', sans-serif;
+    margin-top: 10px;
+    text-align: center;
+  }
 </style>

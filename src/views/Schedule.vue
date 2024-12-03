@@ -224,7 +224,7 @@ const handleSubmit = async (coverageOption: CoverageOptions, shift: shift) => {
 <template>
   <Navbar></Navbar>
   <div id='scheduler'>
-    <div style="text-align: center; font-size: 18px; margin-top: 10px;">Options</div>
+    <div style="text-align: center; font-size: 18px; margin-top: 10px;"><h2>Options</h2></div>
     <div id='filters'>
       <div id="filter-options" v-if="userRole === 'Manager'">
         <!-- Location Dropdown -->
